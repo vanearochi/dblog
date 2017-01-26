@@ -2,15 +2,12 @@
 
 {% block content %}
 <form action="" method="post">
-    <label>
-        Username:
-        <input type="text" name="name" value="">
-    </label>
-    <label>
-        Password:
-        <input type="password" name="password" value="">
-    </label>
-    <input type="submit" value="Login">
+    <div class="inputContainer">
+        <input class="inputText" type="text" name="name" value="" placeholder="Username">
+        <input class="inputText" type="password" name="password" value="" placeholder="Password">
+        <input class="submitButton" type="submit" value="Login" name="login">
+    </div>
+
 </form>
 
 {% endblock %}

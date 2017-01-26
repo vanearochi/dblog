@@ -1,37 +1,29 @@
 {% extends "blog_base.html"%}
 
 {% block content %}
-<form action="" method="post">
-    <label>
-        Username:
-        <input type="text" name="userName" value="{{user_name}}">
-        {% if name_status != True and name_status != None%}
-            <div>{{name_status}}</div>
-        {% endif %}
-    </label>
-    <label>
-        Password:
-        <input type="password" name="userPassword" value="{{user_password}}">
-         {% if password_status != True%}
-            <div>{{password_status}}</div>
-         {% endif %}
-    </label>
-    <label>
-        Verify Password:
-        <input type="password" name="passwordConfirmation" value="">
-    </label>
-    <label>
-        Email (optional):
-        <input type="text" name="userEmail" value="{{user_email}}">
-        {% if email_status != True and email_status == "" %}
-            <div>{{email_status}}</div>
-         {% endif %}
-    </label>
-    <input type="submit">
-    <div>
-        <p>Name must have more than 3 characters and should be alphanumeric characters</p>
-        <p>Password must have at least 6 characters</p>
 
+<form action="" method="post">
+
+        <div class="inputContainer">
+            <input class="inputText" type="text" name="userName" value="{{user_name}}" placeholder="Username">
+            {% if name_status != True and name_status != None%}
+                <div style="color:red; font-size:0.8em">{{name_status}}</div>
+            {% endif %}
+            <input class="inputText" type="password" name="userPassword" value="{{user_password}}" placeholder="Password">
+            {% if password_status != True%}
+                <div style="color:red; font-size:0.8em">{{password_status}}</div>
+            {% endif %}
+            <input class="inputText" type="password" name="passwordConfirmation" value="" placeholder="Confirm password">
+            <input class="inputText" type="text" name="userEmail" value="{{user_email}}" placeholder="Email(optional)">
+            {% if email_status != True and email_status == "" %}
+                <div>{{email_status}}</div>
+            {% endif %}
+            <input class="submitButton" type="submit">
+        </div>
+    <div>
+        <p>Name must have more than 3 characters</p>
+        <p>Password must have at least 6 characters</p>
     </div>
+
 </form>
 {% endblock %}

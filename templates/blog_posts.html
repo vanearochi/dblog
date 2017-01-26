@@ -1,10 +1,18 @@
 {% extends "blog_base.html"%}
 
 {% block content %}
+<form action="" method="post">
     {% for p in posts %}
         <h1>{{p.title}}</h1>
+        <div>
+            <span>By {{p.user_name}}</span>
+            {% if user == p.user_name %}
+                <input type="submit" name="edit" value="Edit" >
+            {% endif %}
+        </div>
+        <h6>{{p.created}}</h6>
         <div>{{p.content}}</div>
-        <br><br>
     {% endfor %}
+</form>
 
 {% endblock %}
