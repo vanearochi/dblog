@@ -1,0 +1,18 @@
+{% extends "blog_base.html"%}
+
+{% block content %}
+<form action="" method="post">
+    {% for p in posts %}
+       <h1><a href="{{p.key().id()}}">{{p.title}}</a></h1>
+        <div>
+            <span>By {{p.user_name}}</span>
+
+            <!--<input type="submit" name="{{p.key()}}" value="Edit" >-->
+        </div>
+        <h6>{{p.created}}</h6>
+        <div>{{p.content}}</div>
+    {% endfor %}
+        <br><br>
+</form>
+
+{% endblock %}
