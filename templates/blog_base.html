@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>My blog</title>
+        <title>Blog</title>
         <link href="https://fonts.googleapis.com/css?family=Poiret+One|Raleway" rel="stylesheet">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <style media="screen" type="text/css">
@@ -13,7 +13,9 @@
             }
             .navbar {
                 font-family: 'Poiret One', cursive;
-                font-size: 1.3em;
+                font-size: large;
+                padding: 0.5em;
+                margin:0;
             }
             .inputText {
                 display: block;
@@ -26,6 +28,9 @@
                 display: table;
                 margin: 0 auto;
             }
+            .saveButton {
+
+            }
 
 
 
@@ -35,39 +40,68 @@
     <form action="" method="post">
         <nav class="navbar navbar-default navbar-static-top">
     <div class="container">
-        <p class="navbar-text navbar-left"> My Blog</p>
+        <p class="navbar-text navbar-left">Dblog</p>
         {% if current_page == "signUp" %}
-            <input class="navbar-text navbar-right" type="submit" value="Login" name="loginPage">
+            <!--<input class="navbar-text navbar-right" type="submit" value="Login" name="loginPage">-->
+            <a class="navbar navbar-right" href="/blog/login">Log In</a>
         {% elif current_page == "login" %}
-            <input class="navbar-text navbar-right" type="submit" value="signUp" name="signUpPage">
+            <!--<input class="navbar-text navbar-right" type="submit" value="signUp" name="signUpPage">-->
+            <a class="navbar navbar-right" href="/blog/signup">Signup</a>
         {% elif current_page == "blog_welcome"%}
-            <input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">
-            <input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">
+            <input type="submit" name="logout" value="Logout"></input>
+            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
+            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
+            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
+            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
+
+            <!--<input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">-->
+            <!--<input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">-->
         {% elif current_page == "registered_blog_entry"%}
             <!--userNewPost-->
-            <input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">
-            <input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">
-            <input class="navbar-text navbar-right" type="submit" value="All posts" name="allPosts">
-        {% elif current_page == "nonRegisteredUser"%}
-            <input class="navbar-text navbar-right" type="submit" value="Login" name="loginPage">
-            <input class="navbar-text navbar-right" type="submit" value="signUp" name="signUpPage">
+            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
+            <a class="navbar navbar-right " href="/blog/myposts">My Posts</a>
+            <a class="navbar navbar-right" href="#"><u>New Post</u></a>
+            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
+            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
+
+
          {% elif current_page == "registered_user_blog_posts"%}
             <!--userPosts-->
-            <input class="navbar-text navbar-right" type="submit" value="New post" name="userNewPost">
-            <input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">
-            <input class="navbar-text navbar-right" type="submit" value="All posts" name="allPosts">
+            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
+            <a class="navbar navbar-right" href="#"><u>My Posts</u></a>
+            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
+            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
+            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
+
          {% elif current_page == "registered_blog_posts"%}
             <!--allPosts-->
-            <input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">
-            <input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">
-            <input class="navbar-text navbar-right" type="submit" value="New post" name="userNewPost">
+            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
+            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
+            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
+            <a class="navbar navbar-right" href="#"><u>All Posts</u></a>
+            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
+
+        {% elif current_page == "registered_blog_redirect"%}
+            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
+            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
+            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
+            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
+            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
+
+        {% elif current_page == "registered_blog_my_profile"%}
+            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
+            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
+            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
+            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
+            <a class="navbar navbar-right" href="#">My Profile</a>
+
+        {% elif current_page == "nonRegisteredUser"%}
+            <a class="navbar navbar-right" href="/blog/login">Log In</a>
+            <a class="navbar navbar-right" href="/blog/signup">Signup</a>
         {% endif %}
 
-
-
-
     </div>
-    </div>
+
 
 </nav>
     </form>

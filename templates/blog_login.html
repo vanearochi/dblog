@@ -3,9 +3,12 @@
 {% block content %}
 <form action="" method="post">
     <div class="inputContainer">
-        <input class="inputText" type="text" name="name" value="" placeholder="Username">
-        <input class="inputText" type="password" name="password" value="" placeholder="Password">
+        <input class="inputText" type="text" name="name" value="{{user_name}}" placeholder="Username">
+        <input class="inputText" type="password" name="password" value="{{user_password}}" placeholder="Password">
         <input class="submitButton" type="submit" value="Login" name="login">
+    </div>
+    <div>
+       {{error}}
     </div>
 
 </form>

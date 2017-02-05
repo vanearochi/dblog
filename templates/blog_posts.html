@@ -3,12 +3,10 @@
 {% block content %}
 <form action="" method="post">
     {% for p in posts %}
-        <h1>{{p.title}}</h1>
+        <h1><a href="{{p.key().id()}}">{{p.title}}</a></h1>
         <div>
             <span>By {{p.user_name}}</span>
-            {% if user == p.user_name %}
-                <input type="submit" name="edit" value="Edit" >
-            {% endif %}
+
         </div>
         <h6>{{p.created}}</h6>
         <div>{{p.content}}</div>

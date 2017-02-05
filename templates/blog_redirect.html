@@ -2,10 +2,63 @@
 
 {% block content %}
 
-
+<form method="post">
         <h3>{{post.title}}</h3>
         <div>{{post.content}}</div>
-        <p><a href="{{post.key().id()}}" name="edit">Edit</a></p>
+        {% if user_name == post.user_name %}
+            <p><a href="/blog/edit/{{post.key().id()}}" name="edit">Edit</a></p>
+        {% endif %}
+        <div>Likes {{likes}}</div>
+        {% if user_name == post.user_name %}
+            <input type="submit" value="Delete" name="delete_blog">
+        {% endif %}
+
+        <div>
+        {% if blog_author != user_name %}
+            {% if user_like == False %}
+                <input type="submit" name="like" value="Liked">
+            {% else %}
+                <input type="submit" name="like" value="Like">
+            {% endif %}
+        {% endif %}
+        </div>
+        <div>
+        {% if error%}
+            <div>{{error}}</div>
+        {% else %}
+            <input type="text" name="comment" placeholder="add a comment">
+        {% endif %}
+        </div>
+        <input type="submit" name="comment">
+        {% if current_comment%}
+            <div>
+            <span>{{user_name}}</span>
+            {{current_comment}}
+            </div>
+        {% endif %}
+
+        {% for comment in comments %}
+            <div>
+                <div>
+                    {% if deleted_comment%}
+                        {% if deleted_comment != comment.key() %}
+                            <span>{{comment.user_name}}</span>
+                            {{comment.comment}}
+                            <input type="submit" value="delete" name="{{comment.key().id()}}">
+                        {%endif%}
+                    {%else%}
+                        <span>{{comment.user_name}}</span>
+                         {{comment.comment}}
+                        <input type="submit" value="delete" name="{{comment.key().id()}}">
+                    {% endif %}
+
+
+                </div>
+            </div>
+        {% endfor %}
+
+</form>
+
 
 
 {% endblock %}
