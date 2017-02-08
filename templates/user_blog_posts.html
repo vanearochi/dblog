@@ -3,7 +3,6 @@
 {% block content %}
 <form action="" >
     {% for p in posts %}
-
         <div class="form-group">
             <h3><a href="{{p.key().id()}}">{{p.title}}</a></h3>
             <p>By {{p.user_name}}</p>

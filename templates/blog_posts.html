@@ -3,13 +3,14 @@
 {% block content %}
 <form action="" method="post">
     {% for p in posts %}
-        <h1><a href="{{p.key().id()}}">{{p.title}}</a></h1>
-        <div>
-            <span>By {{p.user_name}}</span>
+        <div class="inputText list-group ">
+            <h3><a href="{{p.key().id()}}" class="list-group-item active">{{p.title}}</a></h3>
+            <div class="inputText">
+                <p class="text-muted">By {{p.user_name}}/  <span class="text-center">Date created: {{p.created}}</span></p>
+                <p>{{p.content}}</p>
+            </div>
 
         </div>
-        <h6>{{p.created}}</h6>
-        <div>{{p.content}}</div>
     {% endfor %}
 </form>
 

@@ -3,22 +3,29 @@
 {% block content %}
 
 <form method="post">
-        <h3>{{post.title}}</h3>
-        <div>{{post.content}}</div>
+        <div class="container-fluid">
+        <div class=>
+            <h1 class=>{{post.title}}</h1>
+            <span class="margin text-muted">By {{post.user_name}}</span>
+            <span class="margin text-muted">Written {{post.created}}</span>
+            <div class="margin">{{post.content}}</div>
+        </div>
+
         {% if user_name == post.user_name %}
-            <p><a href="/blog/edit/{{post.key().id()}}" name="edit">Edit</a></p>
+            <a href="/blog/edit/{{post.key().id()}}" class="btn btn-primary" name="edit" role="button">Edit</a>
         {% endif %}
-        <div>Likes {{likes}}</div>
+
         {% if user_name == post.user_name %}
-            <input type="submit" value="Delete" name="delete_blog">
+            <input class="margin btn btn-primary" type="submit" value="Delete" name="delete_blog">
         {% endif %}
+         <p class="h4">{{likes}} Likes </p>
 
         <div>
         {% if blog_author != user_name %}
             {% if user_like == False %}
-                <input type="submit" name="like" value="Liked">
+                <input class="btn btn-primary" type="submit" name="like" value="Liked">
             {% else %}
-                <input type="submit" name="like" value="Like">
+                <input class="btn btn-primary" type="submit" name="like" value="Like">
             {% endif %}
         {% endif %}
         </div>
@@ -55,6 +62,8 @@
 
                 </div>
             </div>
+        </div>
+
         {% endfor %}
 
 </form>

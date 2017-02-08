@@ -28,10 +28,15 @@
                 display: table;
                 margin: 0 auto;
             }
-            .saveButton {
-
+            .error{
+                color: red;
             }
-
+            .date{
+                text-align:center
+            }
+            .margin{
+                margin: 10px;
+            }
 
 
         </style>
@@ -40,7 +45,7 @@
     <form action="" method="post">
         <nav class="navbar navbar-default navbar-static-top">
     <div class="container">
-        <p class="navbar-text navbar-left">Dblog</p>
+        <p class="navbar-text navbar-left"><a href="/blog/blogposts">Dblog</a></p>
         {% if current_page == "signUp" %}
             <!--<input class="navbar-text navbar-right" type="submit" value="Login" name="loginPage">-->
             <a class="navbar navbar-right" href="/blog/login">Log In</a>
@@ -56,44 +61,13 @@
 
             <!--<input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">-->
             <!--<input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">-->
-        {% elif current_page == "registered_blog_entry"%}
+        {% elif current_page == "logged_user" %}
             <!--userNewPost-->
             <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
             <a class="navbar navbar-right " href="/blog/myposts">My Posts</a>
-            <a class="navbar navbar-right" href="#"><u>New Post</u></a>
-            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
-            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
-
-         {% elif current_page == "registered_user_blog_posts"%}
-            <!--userPosts-->
-            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
-            <a class="navbar navbar-right" href="#"><u>My Posts</u></a>
             <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
             <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
             <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
-         {% elif current_page == "registered_blog_posts"%}
-            <!--allPosts-->
-            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
-            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
-            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
-            <a class="navbar navbar-right" href="#"><u>All Posts</u></a>
-            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
-        {% elif current_page == "registered_blog_redirect"%}
-            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
-            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
-            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
-            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
-            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
-        {% elif current_page == "registered_blog_my_profile"%}
-            <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
-            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a>
-            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
-            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
-            <a class="navbar navbar-right" href="#">My Profile</a>
 
         {% elif current_page == "nonRegisteredUser"%}
             <a class="navbar navbar-right" href="/blog/login">Log In</a>

@@ -1,15 +1,16 @@
 {% extends "blog_base.html"%}
 
 {% block content %}
-<form action="" method="post">
-    <div class="inputContainer">
-        <input class="inputText" type="text" name="name" value="{{user_name}}" placeholder="Username">
-        <input class="inputText" type="password" name="password" value="{{user_password}}" placeholder="Password">
+<form action="" method="post" >
+    <div class="inputContainer form-group">
+        <input class="inputText form-control" type="text" name="name" value="{{user_name}}" placeholder="Username">
+        <small class="inputText error">{{error1}}</small>
+        <input class="inputText form-control" type="password" name="password" value="{{user_password}}" placeholder="Password">
+        <small class="inputText error">{{error2}}</small>
         <input class="submitButton" type="submit" value="Login" name="login">
     </div>
-    <div>
-       {{error}}
-    </div>
+
+
 
 </form>
 

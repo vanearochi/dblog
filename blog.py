@@ -20,12 +20,15 @@ class Blog(db.Model):
     user_name = db.StringProperty(required=True)
     created = db.DateTimeProperty(auto_now_add=True)
     likes = db.IntegerProperty(default=0)
+    last_modified = db.DateTimeProperty()
+    deletion_date = db.DateTimeProperty(default=None)
 
 
 class User(db.Model):
     user_name = db.StringProperty(required=True)
     user_password = db.StringListProperty(required=True)
     user_email = db.EmailProperty(required=False)
+    user_member_since = db.DateTimeProperty(auto_now_add=True)
 
 class Likes(db.Model):
     blog_id = db.StringProperty(required=True)
@@ -36,6 +39,9 @@ class Comments(db.Model):
     user_name = db.StringProperty(required=True)
     comment = db.StringProperty(required=True)
     created =db.DateTimeProperty(auto_now_add=True)
+    last_modified = db.DateTimeProperty()
+    deletion_date = db.DateTimeProperty(default=None)
+
 
 
 
@@ -76,6 +82,7 @@ class Handler(RequestHandler):
         #print hash_status
         if hash_status is True:
             return user_name
+            print user_name
         else:
             return hash_status
 
@@ -175,7 +182,7 @@ class SignUp(Handler):
             valid_cookie = self.cookie_checker(cookie_value)
             #print valid_cookie
             if valid_cookie is not False:
-                self.redirect_to("AllPosts", current_page="registered_user_blog_posts")
+                self.redirect_to("AllPosts", current_page="logged_user")
             else:
                 self.render( template_name, current_page="signUp")
                 #print "bla"
@@ -199,7 +206,7 @@ class SignUp(Handler):
             status_result.append(email_status)
             if all(result == True for result in status_result):
                 self.save_in_db(name, password, email)
-                self.redirect_to("AllPosts", current_page="registered_user_blog_posts")
+                self.redirect_to("AllPosts", current_page="logged_user")
             else:
                 self.render("blog_signup.html", user_name=name, user_password="", user_email=email,
                             name_status=name_status, password_status=password_status, email_status=email_status,
@@ -210,7 +217,7 @@ class SignUp(Handler):
             if all(result == True for result in status_result):
                 self.save_in_db(name, password)
                 print "signup"
-                self.redirect_to("AllPosts", current_page="registered_user_blog_posts")
+                self.redirect_to("AllPosts", current_page="logged_user")
             else:
                 self.render("blog_signup.html", user_name=name, user_password="", user_email="",
                             name_status=name_status, password_status=password_status, email_status=email_status, current_page="signUp" )
@@ -241,7 +248,7 @@ class LogIn(Handler):
             valid_cookie = self.cookie_checker(cookie_value)
             #print valid_cookie
             if valid_cookie is not False:
-                self.redirect_to("AllPosts", current_page="registered_user_blog_posts")
+                self.redirect_to("AllPosts", current_page="logged_user")
             else:
                 self.render(template_name, current_page="login")
                 #print "bla"
@@ -260,7 +267,7 @@ class LogIn(Handler):
 
             if key == None:
                 #print "non"
-                self.render(template_name, current_page="login", error="This username is not registered", user_name=user_name, user_password= user_password)
+                self.render(template_name, current_page="login", error1="This username is not registered", user_name=user_name, user_password= user_password)
             else:
                 user = db.get(key)
                 #print user.user_password
@@ -273,9 +280,9 @@ class LogIn(Handler):
                 #print hash_status
                 if user_hash == last_hash:
                     self.set_cookie(user_hash, user_name)
-                    self.redirect_to("AllPosts", current_page="registered_user_blog_posts")
+                    self.redirect_to("AllPosts", current_page="logged_user")
                 else:
-                     self.render(template_name, current_page="login", error="Incorrect Password", user_name=user_name, user_password= user_password)
+                     self.render(template_name, current_page="login", error2="Incorrect Password", user_name=user_name, user_password= user_password)
 
 class NewPost(Handler):
     def get(self):
@@ -284,7 +291,7 @@ class NewPost(Handler):
         cookie_value = self.request.cookies.get("name")
         #print cookie_value
         if cookie_value is not None and self.cookie_checker(cookie_value):
-            self.render(template_name, title="", content="", current_page="registered_blog_entry")
+            self.render(template_name, title="", content="", current_page="logged_user")
         else:
             self.render(template_name, title="", content="", current_page="nonRegisteredUser")
 
@@ -302,18 +309,18 @@ class NewPost(Handler):
                 user_name = self.cookie_checker(cookie_value)
                 if user_name:
                     if title_status is True and content_status is True:
-                        new_database_entry = Blog(title=blog_title, content=blog_content, user_name=user_name)
+                        new_database_entry = Blog(title=blog_title, content=blog_content, user_name=user_name )
                         new_database_entry.put()
                         cursor_rows = db.GqlQuery("SELECT * FROM Blog")
                         id_created = new_database_entry.key().id()
                         self.redirect_to("NewCreatedPost", blog_id=id_created)
                     elif title_status is not True and content_status is not True:
                         user_error = title_status + ". " + content_status
-                        self.render(template_error, error=user_error, current_page="registered_blog_entry")
+                        self.render(template_error, error3=user_error, current_page="logged_user")
                     elif title_status is True:
-                        self.render(template_error, title=blog_title, error=content_status, current_page="registered_blog_entry")
+                        self.render(template_error, title=blog_title, error2=content_status, current_page="logged_user")
                     else:
-                        self.render(template_error, content=blog_content, error=title_status, current_page="registered_blog_entry")
+                        self.render(template_error, content=blog_content, error1=title_status, current_page="logged_user")
             else:
                 self.redirect_to("Login")
 
@@ -327,13 +334,12 @@ class AllBlogPosts(Handler):
         posts = db.GqlQuery("SELECT * FROM Blog order by created desc limit 10")
         template_name = "blog_posts.html"
         print self.request.referer
-        a = self.cookie_checker(cookie_value)
-        print a
+
+
 
         if cookie_value is not None and self.cookie_checker(cookie_value):
-            print "cookie"
             user_name = self.cookie_checker(cookie_value)
-            self.render(template_name, posts=posts, user=user_name, current_page="registered_blog_posts")
+            self.render(template_name, posts=posts, user=user_name, current_page="logged_user")
         else:
             #print "non cookie"
             self.render(template_name, posts=posts,  current_page="nonRegisteredUser")
@@ -350,7 +356,9 @@ class UserBlogPosts(Handler):
         if cookie_value is not None and self.cookie_checker(cookie_value):
             user_name = self.cookie_checker(cookie_value)
             user_posts = db.GqlQuery("SELECT * FROM Blog WHERE user_name = :user_name", user_name=user_name)
-            self.render(template_name, posts=user_posts, current_page="registered_user_blog_posts")
+            self.render(template_name, posts=user_posts, current_page="logged_user")
+        else:
+            self.redirect_to("Login")
 
     def post(self):
         cookie_value = self.request.cookies.get("name")
@@ -375,6 +383,23 @@ class SinglePost(Handler):
         cookie_value = self.request.cookies.get("name")
         if cookie_value is not None and self.cookie_checker(cookie_value):
            self.render_base(blog_id)
+        else:
+            cookie_value = self.request.cookies.get("name")
+            ##logged_user_name = self.cookie_checker(cookie_value)
+            blog_key = db.Key.from_path("Blog", int(blog_id))
+            blog = db.get(blog_key)
+            blog = db.get(blog_key)
+            ##user_like = self.give_key_like(blog_id, logged_user_name)
+            blog_author = blog.user_name
+            likes_counter = blog.likes
+
+            comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id order by created desc",
+                                   blog_id=blog_id)
+
+            self.render("blog_redirect.html", post=blog, current_page="nonRegisteredUser",
+                        user_name=None, likes=likes_counter,
+                        blog_author=blog_author, comments=comments)
+
 
     def render_base(self, blog_id, current_comment="", deleted_comment=""):
         cookie_value = self.request.cookies.get("name")
@@ -392,7 +417,7 @@ class SinglePost(Handler):
         comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id order by created desc", blog_id=blog_id)
 
 
-        self.render("blog_redirect.html", post=blog, current_page="registered_blog_redirect",
+        self.render("blog_redirect.html", post=blog, current_page="logged_user",
                     user_name=logged_user_name, likes=likes_counter,
                     blog_author=blog_author, comments=comments, current_comment=current_comment, user_like=user_like,
                     deleted_comment=deleted_comment)
@@ -435,7 +460,7 @@ class SinglePost(Handler):
                     #TODO commentvalidator, likevalidator, add comment/like db
 
                     #self.like_validator(blog_id, user_name)
-                    self.render("blog_redirect.html", post=blog, current_page="registered_blog_redirect",
+                    self.render("blog_redirect.html", post=blog, current_page="logged_user",
                                 user_name=logged_user_name, likes=likes_counter, user_like=user_like,
                                 blog_author=blog_author, comments=comments)
 
@@ -463,7 +488,7 @@ class SinglePost(Handler):
                             "SELECT * FROM Comments WHERE blog_id = :blog_id order by created limit 10",
                             blog_id=blog_id)
 
-                        self.render("blog_redirect.html", post=blog, current_page="registered_blog_redirect",
+                        self.render("blog_redirect.html", post=blog, current_page="logged_user",
                                     user_name=logged_user_name, likes=likes_counter, user_like=user_like,
                                     blog_author=blog_author, comments=comments, current_comment=user_comment)
                         comment_entity = Comments(blog_id=blog_id, user_name=user_name, comment=user_comment)
@@ -499,7 +524,7 @@ class SinglePost(Handler):
                     blog_author = blog.user_name
                     likes_counter = blog.likes
                     comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id ", blog_id=blog_id)
-                    self.render("blog_redirect.html", post=blog, current_page="registered_blog_redirect",
+                    self.render("blog_redirect.html", post=blog, current_page="logged_user",
                             user_name=logged_user_name, likes=likes_counter, user_like=user_like,
                             blog_author=blog_author, comments=comments,
                             deleted_comment=key_comment)
@@ -588,7 +613,7 @@ class EditSinglePost(Handler):
         cookie_value = self.request.cookies.get("name")
         if cookie_value is not None and self.cookie_checker(cookie_value):
 
-            self.render("blog_entry.html", title=post.title, content=post.content, current_page="registered_blog_redirect")
+            self.render("blog_entry.html", title=post.title, content=post.content, current_page="logged_user")
 
     def post(self, blog_id):
         #print "a"
@@ -606,16 +631,16 @@ class EditSinglePost(Handler):
                     post.title = blog_title
                     post.content = blog_content
                     post.put()
-                    self.redirect_to("NewCreatedPost", blog_id=blog_id, current_page="registered_blog_redirect")
+                    self.redirect_to("NewCreatedPost", blog_id=blog_id, current_page="logged_user")
                 elif title_status is not True and content_status is not True:
                     user_error = title_status + ". " + content_status
-                    self.render(template_error, error=user_error, current_page="registered_blog_redirect")
+                    self.render(template_error, error=user_error, current_page="logged_user")
                 elif title_status is True:
                     # print title_status
-                    self.render(template_error, title=blog_title, error=content_status, current_page="registered_blog_redirect")
+                    self.render(template_error, title=blog_title, error=content_status, current_page="logged_user")
                 else:
                     # print content_status
-                    self.render(template_error, content=blog_content, error=title_status, current_page="registered_blog_redirect")
+                    self.render(template_error, content=blog_content, error=title_status, current_page="logged_user")
 
             elif self.request.POST.get("logout"):
                 self.logout()
@@ -631,7 +656,9 @@ class UserProfile(Handler):
             key = self.get_key_by_user_name(user_name)
             user = db.get(key)
             user_email = user.user_email
-            self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email, current_page="registered_blog_my_profile")
+            self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email, current_page="logged_user")
+        else:
+            self.redirect_to("Login")
 
 
     def post(self):
@@ -646,11 +673,11 @@ class UserProfile(Handler):
         user_email = user.user_email
 
         if self.request.POST.get("editName"):
-            self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_name="yes", current_page="registered_blog_my_profile")
+            self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_name="yes", current_page="logged_user")
         elif self.request.POST.get("editPassword"):
-            self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="yes", current_page="registered_blog_my_profile")
+            self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="yes", current_page="logged_user")
         elif self.request.POST.get("editEmail"):
-            self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email, edit_email="yes", current_page="registered_blog_my_profile")
+            self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email, edit_email="yes", current_page="logged_user")
 #kindof
         if self.request.POST.get("saveName"):
 
@@ -665,7 +692,7 @@ class UserProfile(Handler):
                 user.user_password=new_hash_salt
                 user.put()
                 self.set_cookie(new_hash, new_name)
-                self.render("blog_my_profile.html", user_name=new_name, password="-----", email="", edit_name="no", current_page="registered_blog_my_profile")
+                self.render("blog_my_profile.html", user_name=new_name, password="-----", email="", edit_name="no", current_page="logged_user")
 
                 #change blog name
                 blogs_by_user= db.GqlQuery("SELECT * FROM Blog WHERE user_name = :user_name ", user_name=user_name)
@@ -700,11 +727,11 @@ class UserProfile(Handler):
 
             elif name_status is not True and entered_password_with_hash == user_saved_hash:
                 #print "eror"
-                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error=name_status, edit_name="yes", current_page="registered_blog_my_profile")
+                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error=name_status, edit_name="yes", current_page="logged_user")
             elif name_status is True and entered_password_with_hash != user_saved_hash:
-                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error="Please enter a valid password", edit_name="yes", current_page="registered_blog_my_profile")
+                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error="Please enter a valid password", edit_name="yes", current_page="logged_user")
             else:
-                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error="Please enter a valid name and password", edit_name="yes", current_page="registered_blog_my_profile")
+                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error="Please enter a valid name and password", edit_name="yes", current_page="logged_user")
 
         elif self.request.POST.get("savePassword"):
            new_password= self.request.get("newPassword")
@@ -721,15 +748,15 @@ class UserProfile(Handler):
                 user.user_password = new_saved_password
                 user.put()
                 self.set_cookie(new_hash, user_name)
-                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="no", current_page="registered_blog_my_profile")
+                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="no", current_page="logged_user")
            elif password_status is not True and entered_password_with_hash == user_saved_hash:
-               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="registered_blog_my_profile")
+               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="logged_user")
            elif password_status is True and entered_password_with_hash != user_saved_hash:
                password_status = "Your current password is incorrect"
-               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="registered_blog_my_profile")
+               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="logged_user")
            else:
                password_status = password_status + " / Your current password is incorrect"
-               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="registered_blog_my_profile")
+               self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error_password=password_status, edit_password="yes", current_page="logged_user")
 
         elif self.request.POST.get("saveEmail"):
             new_email = self.request.get("newEmail")

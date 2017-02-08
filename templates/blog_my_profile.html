@@ -9,14 +9,14 @@
                 <th> <input type="text" value="" name="userName" placeholder="Enter a new name" class="form-control"></th>
                 <th><input type="password" name="userPassword" placeholder="Enter your password" class="form-control"></th>
                 <th><input type="submit" name="saveName" value="Save" class="btn btn-primary"></th>
-                <th><a  href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
+                <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
            {% else %}
                 <th>{{user_name}}</th>
                 <th><input type="submit" name="editName" value="Change" class="btn btn-primary"></th>
            {% endif %}
        </tr>
             {% if error_name != True %}
-                <p>{{error}}</p>
+                <small class="inputText error text-center">{{error}}</small>
             {% endif %}
        <tr>
            <th>Password</th>
@@ -31,7 +31,7 @@
                 <th><input type="submit" name="editPassword" value="Change" class="btn btn-primary" ></th>
             {% endif %}
             {% if error_name != True %}
-                <p>{{error_password}}</p>
+                <small class="inputText error text-center">{{error_password}}</small>
             {% endif %}
        </tr>
        <tr>
@@ -49,7 +49,7 @@
                 <th><input type="submit" name="editEmail" value="Change" class="btn btn-primary"></th>
             {% endif %}
             {% if error_name != True %}
-                <p>{{error_email}}</p>
+                <small class="inputText error text-center">{{error_email}}</small>
             {% endif %}
        </tr>
    </table>
