@@ -326,10 +326,10 @@ class Handler(RequestHandler):
 
 
 class SignUp(Handler):
-    """Handler for Sign up form"""
+    """Handles Sign up form requests"""
 
     def get(self):
-        """Renders the signup template if there is not a session initiated or if the cookie is not longer valid.
+        """Renders signup template if there is not a session initiated or if the cookie is not longer valid.
            If the current session is valid then redirect to All posts page
          """
         cookie_value = self.request.cookies.get("name")
@@ -345,7 +345,9 @@ class SignUp(Handler):
 
     def post(self):
         """Sends to check if the information entered by the user when registering is valid,
-            if it is then it saves User. Otherwise, it renders again the sign up page with the corresponding errors.
+            if it is then initialize a session calling functions to save the information and set the cookie and
+            redirecting to all posts page. Otherwise, it renders again the sign up page
+            with the corresponding errors.
         """
         user_name = self.request.get("userName")
         user_password = self.request.get("userPassword")
@@ -388,51 +390,53 @@ class SignUp(Handler):
         self.set_cookie(user_hash, user_name, key=key)
 
 class LogIn(Handler):
-    ##TODO check bug when enter only whitespaces
-
+    """Handles login requests"""
     def get(self):
+        """Renders login template if there is not a session initiated or if the cookie is not longer valid.
+           If the current session is valid then redirect to All posts page
+        """
         cookie_value = self.request.cookies.get("name")
         template_name = "blog_login.html"
         if cookie_value is not None:
             valid_cookie = self.cookie_validator(cookie_value)
-            # print valid_cookie
             if valid_cookie is not False:
                 self.redirect_to("AllPosts")
             else:
                 self.render(template_name, current_page="login")
-                # print "bla"
         else:
             self.render(template_name, current_page="login")
 
     def post(self):
+        """Sends to check if the information entered by the user when login in is valid,
+           if it is then initialize a session setting the corresponding cookie.
+           Otherwise, it renders again the log in page with the corresponding errors.
+        """
         user_name = self.request.get("name")
-        ##http://stackoverflow.com/questions/21505255/identify-which-submit-button-was-clicked-in-django-form-submit
+        # With a lil help from stackoverflow:
+        # http://stackoverflow.com/questions/21505255/identify-which-submit-button-was-clicked-in-django-form-submit
         user_password = self.request.get("password")
         template_name = "blog_login.html"
-        if all(result != " " for result in user_name):
+        if all(result != " " for result in user_name) and len(user_name) > 0:
             key = self.get_key_by_user_name(user_name)
-
-            if key == None:
-                # print "non"
+            if key is None:
                 self.render(template_name, current_page="login", error1="This username is not registered",
                             user_name=user_name, user_password=user_password)
             else:
-                user = db.get(key)
-                # print user.user_password
-                user_saved_password = user.user_password
+                user_entity = db.get(key)
+                user_saved_password = user_entity.user_password
                 user_hash = user_saved_password[0]
                 user_salt = user_saved_password[1]
                 last_hash = self.get_hash_with_salt(user_name, user_password, user_salt)
-                # print last_hash
                 hash_status = self.hash_validator(last_hash, key)
-                # print hash_status
-                if user_hash == last_hash:
+                if hash_status is True:
                     self.set_cookie(user_hash, user_name)
                     self.redirect_to("AllPosts", current_page="logged_user")
                 else:
                     self.render(template_name, current_page="login", error2="Incorrect Password", user_name=user_name,
                                 user_password=user_password)
-
+        else:
+            self.render(template_name, current_page="login", error1="Please enter a valid user name",
+                        user_name=user_name, user_password=user_password)
 
 class NewPost(Handler):
     def get(self):
