@@ -10,6 +10,12 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: Blog
+  properties:
+  - name: deletion_date
+  - name: created
+    direction: desc
+
 - kind: Comments
   properties:
   - name: blog_id
@@ -25,3 +31,15 @@ indexes:
   - name: blog_id
   - name: created
     direction: desc
+
+- kind: Comments
+  properties:
+  - name: blog_id
+  - name: deletion_date
+  - name: created
+    direction: desc
+
+- kind: Likes
+  properties:
+  - name: user_name
+  - name: blog_id

@@ -2,16 +2,18 @@
 
 {% block content %}
 <form action="" method="post">
+    <div class="container-fluid blog-post">
     {% for p in posts %}
-        <div class="inputText list-group ">
-            <h3><a href="{{p.key().id()}}" class="list-group-item active">{{p.title}}</a></h3>
+        <div class="list-group blog-container ">
+            <h2><a href="{{p.key().id()}}" class="text-capitalize active">{{p.title}}</a></h2>
             <div class="inputText">
-                <p class="text-muted">By {{p.user_name}}/  <span class="text-center">Date created: {{p.created}}</span></p>
-                <p>{{p.content}}</p>
+                <small class="text-muted text-capitalize">Posted by {{p.user_name}} / <span class="text-center">{{p.show_created}}</span></small>
+                <div class="blog-content">{{p.content}}</div>
             </div>
 
         </div>
     {% endfor %}
+    </div>
 </form>
 
 {% endblock %}

@@ -11,6 +11,9 @@
                     <small class="error">{{error2}}</small>
                     <p><small class="error">{{error3}}</small></p>
                     <input type="submit" value="Submit" name="newPostButton" class="btn btn-primary">
+                    {% if edit == True %}
+                    <a href="/blog/{{blog_id}}" class="btn btn-primary" name="edit" role="button">Cancel</a>
+                    {% endif %}
                 </div>
 </form>
 {% endblock %}
