@@ -47,11 +47,11 @@
                  {% if blog_author != user_name %}
                     <!--Disables button if the user is editing any comment-->
                         {% if edit_comment == True%}
-                            <input class="btn btn-link " type="submit" name="like" value="-{{user_like}}" disabled>
+                            <input class="btn btn-link " type="submit" name="like" value="{{user_like}}" disabled>
                         {% elif current_page == "nonRegisteredUser" %}
-                            <input class="btn btn-link " type="submit" name="like" value="-Like">
+                            <input class="btn btn-link " type="submit" name="like" value="Like">
                         {% else %}
-                            <input class="btn btn-link like-button" type="submit" name="like" value="-{{user_like}}">
+                            <input class="btn btn-link like-button" type="submit" name="like" value="{{user_like}}">
                         {% endif %}
                 {% endif %}
             </div>

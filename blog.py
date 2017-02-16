@@ -12,7 +12,6 @@ path_template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path_template_dir), autoescape=True, trim_blocks=True)
 
 
-
 class Blog(db.Model):
     """Blog database model
     Attributes:
@@ -80,6 +79,7 @@ class Comments(db.Model):
 
 class Handler(RequestHandler):
     """ Handles functions that are used by more than one class."""
+
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
@@ -119,11 +119,12 @@ class Handler(RequestHandler):
         return user_key
 
     def cookie_validator(self, cookie_name):
-        """Checks if the cookie name passed is valid according to the
+        """Checks if the cookie name passed is valid.
+                Searchs for the user name and hash and compare them with the cookie values.
         Args:
             cookie_name: String representing the cookie's name that is formed by the user_name and his created hash_value.
         Returns:
-            A string indicating if the cookie_name is valid or not.
+            A string representing the user name when the cookie is valid and False if is not .
         """
         split_cookie_value = cookie_name.split("|")
 
@@ -146,10 +147,10 @@ class Handler(RequestHandler):
             return hash_status
 
     def hash_validator(self, hash_value, user_key):
-        """Checks if the hash value passed is the same as the one stored for a particular key object
+        """Checks if the hash value passed is the same as the one stored for a particular key object.
         Args:
             hash_value: String representing the hash stored at the current user's cookie.
-            user_key: Key object of a particular instance.
+            user_key: Key object assigned to a particular instance.
         Returns:
             A boolean value indicating if the hash is valid or not
         """
@@ -162,7 +163,7 @@ class Handler(RequestHandler):
 
     def entry_validator(self, entry_name, entry):
         """Checks if an entry is valid according to the requirements.
-        Entry could be a title, comment or content, they differ in length and they should not only contain white spaces.
+        Entry could be a title, comment or content, they differ in length and they should not be only white spaces.
         Args:
             entry_name: String representing the type of entry (title, comment or content)
             entry: String representing the content  of the entry that the user submit
@@ -186,10 +187,15 @@ class Handler(RequestHandler):
         else:
             return True
 
-    def name_validator(self, userName):
-        """Checks if the user name """
+    def name_validator(self, user_name):
+        """Checks if the user name is has a valid name and is not only white spaces.
+        Args:
+            user_name: string representing the name the user is trying to register.
+        Returns:
+            A string indicating an error or a boolean value if the name is valid.
+        """
         error_name = "Please enter a valid name"
-        user_no_spaces =  userName.replace(" ", "")
+        user_no_spaces = user_name.replace(" ", "")
         if all(result != " " for result in user_no_spaces):
             if 3 < len(user_no_spaces) < 25:
                 return self.db_search(user_no_spaces)
@@ -198,9 +204,15 @@ class Handler(RequestHandler):
         else:
             return error_name
 
-    def db_search(self, userName):
+    def db_search(self, user_name):
+        """Search in database for the name that the user is trying to register.
+        Args:
+            user_name: string representing the name the user is trying to register.
+        Returns:
+            A boolean value if the name doesn't exist in the database and an error if it does.
+        """
         query = User.all(keys_only=True)
-        query.filter("user_name =", userName)
+        query.filter("user_name =", user_name)
         error_name_database = "This name is already in use, please enter a new one"
         key = query.get()
         if key == None:
@@ -208,61 +220,80 @@ class Handler(RequestHandler):
         else:
             return error_name_database
 
-    def hash_it_with_salt(self, name, password):
-        ##With a lil help from stackoverflow: http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
+    def hash_it_with_salt(self, user_name, user_password):
+        """Creates a salt string and hashed it with user name and password entered.
+        Args:
+            user_name: String representing the name that the user is registering.
+            user_password: String representing the password entered.
+        Returns:
+            A hash value and the salt created for a particular user.
+        """
+        # With a lil help from stackoverflow:
+        # http://stackoverflow.com/questions/2257441/
+        # random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
         salt = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for x in xrange(10))
 
-        hash = hashlib.sha512(name + password + salt).hexdigest()
+        hash = hashlib.sha512(user_name + user_password + salt).hexdigest()
         return [hash, salt]
 
-    def logout(self):
-        self.response.delete_cookie("name")
-        self.redirect_to("Login")
-
-    def set_cookie(self, hash, user_name, key=None):
-        value = user_name + "|" + hash
+    def set_cookie(self, user_hash, user_name, key=None):
+        """Concatenates arguments to create a cookie value and sets it.
+        Args:
+            user_hash: String representing the hash value for a particular user.
+            user_name: String representing the name that the user registered.
+            key: Key object assigned to a particular instance.
+        """
+        value = user_name + "|" + user_hash
         if key is not None:
             value += "|" + str(key)
 
         self.response.set_cookie("name", value)
 
-    def password_validator(self, userPassword, passwordConfirmation):
-        status = []
+    def password_validator(self, user_password, password_confirmation):
+        """Checks if password entered meets a min length and match with the confirmation.
+        Args:
+            user_password: String representing the password entered.
+            password_confirmation: String representing the password entered.
+        Returns:
+            An error if password is not valid and a boolean value if it is valid.
+        """
         error_valid_password = "Please enter a valid password"
-        error_match_password = "Passowords entered don't match"
-        if all(result != " " for result in userPassword):
-            if 6 < len(userPassword) < 20:
-                if userPassword == passwordConfirmation:
+        error_match_password = "Passwords entered don't match"
+        if all(result != " " for result in user_password):
+            if 6 < len(user_password) < 20:
+                if user_password == password_confirmation:
                     return True
                 else:
                     return error_match_password
         return error_valid_password
 
-    def email_validator(self, email):
+    def email_validator(self, user_email):
+        """Checks if email entered has or not certain characters.
+            Notice that there is an email checkup performed by Bootstrap too.
+        Args:
+            user_email: String representing the email entered by the user.
+        Returns:
+            A boolean value if the email is valid and an error if is not.
+        """
         error_valid_email = "Please enter a valid email"
-        if email.find(' ') == -1 and email.find("@") != -1:
-            if email[-4:] == ".com":
+        if user_email.find(' ') == -1 and user_email.find("@") != -1:
+            if user_email.find('.') != -1:
                 return True
         return error_valid_email
 
-    def delete_entity(self, kind, id_entity):
-        key = db.Key.from_path(kind, int(id_entity))
-        entity = db.get(key)
-        entity.delete()
-
-    def like_validator(self, blog_id, logged_user):
-
-        user_key = self.get_key_by_user_name(logged_user)
-        user_entity = db.get(user_key)
+    def like_validator(self, post_id, user_name):
+        """Checks if user has liked or not a particular blog post.
+        Args:
+            post_id: A string representing the id of a created blog_post.
+            user_name: A string representing the name of the user logged in.
+        Returns:
+            A string indicating if user likes or not the post.
+        """
         query_likes = Likes.all(keys_only=True)
-        query_likes.filter("blog_id", blog_id).filter("user_name", logged_user)
+        query_likes.filter("blog_id", post_id).filter("user_name", user_name)
         key_likes = query_likes.get()
-        key_run = query_likes.run()
-        key_blog = db.Key.from_path("Blog", int(blog_id))
-        blog_entity = db.get(key_blog)
-        post_author = blog_entity.user_name
 
-        if key_likes == None:
+        if key_likes is None:
             return "Like"
         else:
             like_entity = db.get(key_likes)
@@ -272,7 +303,7 @@ class Handler(RequestHandler):
                 return "Like"
 
     def render_post(self, comment_error, blog_id, error):
-        # key_words_paramenters = kwargs
+        """"""
 
         comment_error = comment_error
         cookie_value = self.request.cookies.get("name")
@@ -295,69 +326,66 @@ class Handler(RequestHandler):
 
 
 class SignUp(Handler):
+    """Handler for Sign up form"""
+
     def get(self):
+        """Renders the signup template if there is not a session initiated or if the cookie is not longer valid.
+           If the current session is valid then redirect to All posts page
+         """
         cookie_value = self.request.cookies.get("name")
         template_name = "blog_signup.html"
         if cookie_value is not None:
             valid_cookie = self.cookie_validator(cookie_value)
-            # print valid_cookie
             if valid_cookie is not False:
                 self.redirect_to("AllPosts")
             else:
                 self.render(template_name, current_page="signUp")
-                # print "bla"
         else:
             self.render(template_name, user_name="", user_password="", user_email="", current_page="signUp")
 
     def post(self):
-        name = self.request.get("userName")
-        name_status = self.name_validator(name)
-        password = self.request.get("userPassword")
-        password_confirmation = self.request.get("passwordConfirmation")
-        password_status = self.password_validator(password, password_confirmation)
-        email = self.request.get("userEmail")
-        self.email_validator(email)
+        """Sends to check if the information entered by the user when registering is valid,
+            if it is then it saves User. Otherwise, it renders again the sign up page with the corresponding errors.
+        """
+        user_name = self.request.get("userName")
+        user_password = self.request.get("userPassword")
+        user_password_confirmation = self.request.get("passwordConfirmation")
+        user_email = self.request.get("userEmail")
+        name_status = self.name_validator(user_name)
+        password_status = self.password_validator(user_password, user_password_confirmation)
         status_result = []
         email_status = ""
-        if len(email) > 0 and email.isspace() is not True:
-            email_status = self.email_validator(email)
+        if len(user_email) > 0 and user_email.isspace() is not True:
+            email_status = self.email_validator(user_email)
             status_result.append(name_status)
             status_result.append(password_status)
             status_result.append(email_status)
-            if all(result == True for result in status_result):
-                self.save_in_db(name, password, email)
+            if all(result is True for result in status_result):
+                self.save_in_db(user_name, user_password, user_email)
                 self.redirect_to("AllPosts")
             else:
-                self.render("blog_signup.html", user_name=name, user_password="", user_email=email,
+                self.render("blog_signup.html", user_name=user_name, user_password="", user_email=user_email,
                             name_status=name_status, password_status=password_status, email_status=email_status,
                             current_page="signUp")
         else:
             status_result.append(name_status)
             status_result.append(password_status)
-            if all(result == True for result in status_result):
-                self.save_in_db(name, password)
-
-
+            if all(result is True for result in status_result):
+                self.save_in_db(user_name, user_password)
+                self.redirect_to("AllPosts")
             else:
-                self.render("blog_signup.html", user_name=name, user_password="", user_email="",
+                self.render("blog_signup.html", user_name=user_name, user_password="", user_email="",
                             name_status=name_status, password_status=password_status, email_status=email_status,
                             current_page="signUp")
 
-    def save_in_db(self, userName, userPassword, email=None):
-        userEmail = email
-        encrypt_password = self.hash_it_with_salt(userName, userPassword)
-        new_database_entry = User(user_name=userName, user_password=encrypt_password, user_email=userEmail)
+    def save_in_db(self, user_name, user_password, email=None):
+        """Creates an an entity of User kind, saves it and set the cookie"""
+        user_email = email
+        encrypt_password = self.hash_it_with_salt(user_name, user_password)
+        new_database_entry = User(user_name=user_name, user_password=encrypt_password, user_email=user_email)
         key = new_database_entry.put()
-        hash = encrypt_password[0]
-        self.set_cookie(hash, userName, key=key)
-        self.redirect_to("AllPosts")
-
-    def hash_it_with_salt(self, name, password):
-        ##With a lil help from stackoverflow: http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python/23728630#23728630
-        salt = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for x in xrange(10))
-        hash = hashlib.sha512(name + password + salt).hexdigest()
-        return [hash, salt]
-
+        user_hash = encrypt_password[0]
+        self.set_cookie(user_hash, user_name, key=key)
 
 class LogIn(Handler):
     ##TODO check bug when enter only whitespaces
@@ -493,8 +521,6 @@ class UserBlogPosts(Handler):
         if self.request.POST.get("Edit"):
             # print "bla"
             self.redirect_to("Edit")
-        elif self.request.POST.get("logout"):
-            self.logout()
 
 
 class SinglePost(Handler):
@@ -785,7 +811,7 @@ class EditComment(Handler):
                 self.render("blog_redirect.html", post=blog, current_page="logged_user",
                             user_name=logged_user_name, likes=likes_counter,
                             blog_author=blog_author, comments=comments, user_like=user_like, edit_comment=True,
-                            comment_key=comment_key,  error_comment= validation
+                            comment_key=comment_key, error_comment=validation
                             )
             else:
 
