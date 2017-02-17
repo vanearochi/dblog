@@ -1,7 +1,10 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
-<form action="" method="post" >
+<!-- Template rendered for Login page -->
+<!-- Errors and certain values are outputted by Jinja2 -->
+<form method="post" >
     <div class="inputContainer form-group">
         <input class="inputText form-control" type="text" name="name" value="{{user_name}}" placeholder="Username">
         <small class="inputText error">{{error1}}</small>
@@ -9,9 +12,6 @@
         <small class="inputText error">{{error2}}</small>
         <input class="submitButton" type="submit" value="Login" name="login">
     </div>
-
-
-
 </form>
 
 {% endblock %}

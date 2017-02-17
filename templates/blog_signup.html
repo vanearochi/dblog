@@ -1,9 +1,10 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
-
+<!-- Template rendered for user's profile page -->
+<!-- Errors are outputted by Jinja2 -->
 <form action="/blog/signup" method="post">
-
         <div class="inputContainer form-group">
             <input class="inputText form-control" type="text" name="userName" value="{{user_name}}" placeholder="Username">
             {% if name_status != True and name_status != None%}
@@ -24,7 +25,5 @@
                 <small class="form-text mark ">Password must have at least 6 characters.</small>
             </div>
         </div>
-
-
 </form>
 {% endblock %}

@@ -1,188 +1,144 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Blog</title>
-        <link href="https://fonts.googleapis.com/css?family=Poiret+One|Raleway" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <style media="screen" type="text/css">
-            * {
+<head>
+    <title>Blog</title>
+    <link href="https://fonts.googleapis.com/css?family=Poiret+One|Raleway" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style media="screen" type="text/css">
+        * {
+            font-family: 'Raleway', sans-serif;
+            letter-spacing: 0.1em;
+        }
+        .container{
+            margin-left: 0
+        }
+        .navbar {
+            font-size: 20px;
+            padding: 1em 0.5em 0;
+            letter-spacing: 0.05em;
+        }
+        .inputText {
+            display: block;
+            margin: 10px;
+        }
+        .submitButton{
+            margin-left: 60px;
+        }
+        .inputContainer {
+            display: table;
+            margin: 0 auto;
+        }
+        .error{
+            color: red;
+        }
+        .date{
+            text-align:center
+        }
+        .margin{
+            margin: 10px;
+        }
+        .navbar{
+            color: black;
+        }
+        .blog-post{
+            width: 65%;
+        }
+        .single-post{
+            width: 90%
+        }
+        a{
+            color: darkslategray;
+            font-variant: small-caps;
+            font-weight: bolder;
+            vertical-align:middle;
+            font-family: 'Quicksand', sans-serif;
+        }
+        .titles{
+            color: darkslategray;
+        }
+        .navbar-brand a{
+            color: black;
+            font-size: -webkit-xxx-large;
+            font-family: 'Quicksand', sans-serif;
+            letter-spacing: 0.2em;
+        }
+        .blog-container{
+            border-bottom-style: solid;
+            border-bottom-width: thin;
+        }
+        .btn-primary{
+            background-color: darkslategray;
+            border-color: darkslategray;
+            font-variant: small-caps;
+        }
+        .btn{
+         font-variant: small-caps;
+         }
 
-                font-family: 'Raleway', sans-serif;
-                letter-spacing: 0.1em;
-            }
-            .container{
-                margin-left: 0
-            }
-            .navbar {
-
-                font-size: 20px;
-                padding: 1em 0.5em 0;
-                letter-spacing: 0.05em;
-
-            }
-            .inputText {
-                display: block;
-                margin: 10px;
-            }
-            .submitButton{
-                margin-left: 60px;
-            }
-            .inputContainer {
-                display: table;
-                margin: 0 auto;
-            }
-            .error{
-                color: red;
-            }
-            .date{
-                text-align:center
-            }
-            .margin{
-                margin: 10px;
-            }
-            .navbar{
-                color: black;
-
-            }
-
-            .blog-post{
-                width: 65%;
-            }
-
-            .single-post{
-                width: 90%
-            }
-
-            a{
-                color: darkslategray;
-                font-variant: small-caps;
-                font-weight: bolder;
-                vertical-align:middle;
-                font-family: 'Quicksand', sans-serif;
-
-            }
-            .titles{
-                color: darkslategray;
-            }
-            .navbar-brand a{
-                color: black;
-                font-size: -webkit-xxx-large;
-                font-family: 'Quicksand', sans-serif;
-                letter-spacing: 0.2em;
-
-            }
-            .blog-container{
-                border-bottom-style: solid;
-                border-bottom-width: thin;
-
-            }
-            .btn-primary{
-                background-color: darkslategray;
-                border-color: darkslategray;
-                font-variant: small-caps;
-            }
-
-            .btn{
-             font-variant: small-caps;
-             }
-
-            .blog-content{
-                max-height: 50px;
-                overflow: scroll;
-            }
-
-            .comment-btn{
-                display: inline-block;
-
-                <!--#font-variant: small-caps;-->
-            }
-            .submit-comment{
-                display:block;
-            }
-            .comments-container{
-
-                border-style: solid none solid none;
-                background-color: #f6f8f9;
-                border-color: #e2e2e2;
-                border-width:thin;
-            }
-            .comment-content-box{
-
-            }
-            .comment-box{
-                border-bottom: solid;
-                background-color: #f6f8f9;
-                border-color: #e2e2e2;
-                border-width:thin;
-            }
-            .comment-form-container{
-                margin-top: 10px;
-            }
-           .h4{
-                vertical-align: inherit;
-
-           }
-          .post-content-box{
+        .blog-content{
+            max-height: 50px;
+            overflow: scroll;
+        }
+        .comment-btn{
+            display: inline-block;
+        }
+        .comments-container{
+            border-style: solid none solid none;
+            background-color: #f6f8f9;
+            border-color: #e2e2e2;
+            border-width:thin;
+        }
+        .comment-box{
+            border-bottom: solid;
+            background-color: #f6f8f9;
+            border-color: #e2e2e2;
+            border-width:thin;
+        }
+        .comment-form-container{
+            margin-top: 10px;
+        }
+       .h4{
+            vertical-align: inherit;
+       }
+       .post-content-box{
             margin-top: 20px;
-          }
-          .button-box{
+        }
+       .button-box{
             margin-bottom: 10px !important;
-          }
-          .post-box{
+       }
+       .post-box{
             width:90%
-          }
-          .cancel-changes{
+       }
+       .cancel-changes{
             color:#337ab7;
-          }
-
-
-
-
-        </style>
-    </head>
-    <body>
-    <form action="" method="post">
+       }
+    </style>
+</head>
+<body>
+    <!--Navigation bar-->
+    <!-- It will change it's content depending on current page value-->
         <nav class="navbar navbar-default navbar-static-top">
     <div class="container">
         <p class="navbar-text navbar-left navbar-brand"><a href="/blog/blogposts">Dblog</a></p>
         {% if current_page == "signUp" %}
-            <!--<input class="navbar-text navbar-right" type="submit" value="Login" name="loginPage">-->
             <a class="navbar navbar-right" href="/blog/login">Log In</a>
         {% elif current_page == "login" %}
-            <!--<input class="navbar-text navbar-right" type="submit" value="signUp" name="signUpPage">-->
             <a class="navbar navbar-right" href="/blog/signup">Signup</a>
-        {% elif current_page == "blog_welcome"%}
-            <input type="submit" name="logout" value="Logout"></input>
-            <a class="navbar navbar-right" href="/blog/myposts">My Posts</a> |
-            <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
-            <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
-            <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
-            <!--<input class="navbar-text navbar-right" type="submit" value="My posts" name="myPostsPage">-->
-            <!--<input class="navbar-text navbar-right" type="submit" value="My profile" name="myProfile">-->
         {% elif current_page == "logged_user" %}
-            <!--userNewPost-->
             <a class="navbar navbar-right" href="/blog/logout">Log Out</a>
             <a class="navbar navbar-right " href="/blog/myposts">My Posts</a>
             <a class="navbar navbar-right" href="/blog/newpost">New Post</a>
             <a class="navbar navbar-right" href="/blog/blogposts">All Posts</a>
             <a class="navbar navbar-right" href="/blog/myprofile">My Profile</a>
-
         {% elif current_page == "nonRegisteredUser"%}
             <a class="navbar navbar-right" href="/blog/login">Log In</a>
             <a class="navbar navbar-right" href="/blog/signup">Signup</a>
         {% endif %}
-
     </div>
-
-
-</nav>
-    </form>
-
-
+    </nav>
         {% block content %}
         {% endblock %}
-
-    </body>
+</body>
 </html>

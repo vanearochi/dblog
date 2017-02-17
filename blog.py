@@ -197,7 +197,7 @@ class Handler(RequestHandler):
         error_name = "Please enter a valid name"
         user_no_spaces = user_name.replace(" ", "")
         if all(result != " " for result in user_no_spaces):
-            if 3 < len(user_no_spaces) < 25:
+            if 3 <= len(user_no_spaces) < 25:
                 return self.db_search(user_no_spaces)
             else:
                 return error_name
@@ -648,7 +648,10 @@ class CommentPost(Handler):
     def post(self, blog_id):
         """Verifies if user's session is still valid, if valid, verifies the comment submitted,
          if creates a new comment entity of kind comment and saves it.
-         If not valid renders the same template with corresponding errors"""
+         If not valid renders the same template with corresponding errors
+         Beware that there will be a small inconsistency when submitting so it might appear after
+         reloading """
+
         cookie_value = self.request.cookies.get("name")
         if cookie_value is not None and self.cookie_validator(cookie_value):
             logged_user_name = self.cookie_validator(cookie_value)
@@ -658,6 +661,7 @@ class CommentPost(Handler):
                 comment_entity = Comments(blog_id=blog_id, user_name=logged_user_name, comment=user_comment)
                 comment_entity.put()
                 self.redirect_to("NewCreatedPost", blog_id=blog_id)
+
             else:
                 self.render_post(comment_error="Please add a valid comment", blog_id=blog_id,
                                  error="Please add a valid comment")
@@ -722,8 +726,11 @@ class DeleteComment(Handler):
 
 
 class UserProfile(Handler):
+    """Handles my profile requests"""
 
     def get(self):
+        """Verifies if user's session is still valid and
+          renders my profile template."""
         cookie_value = self.request.cookies.get("name")
         if cookie_value is not None and self.cookie_validator(cookie_value):
             user_name = self.cookie_validator(cookie_value)
@@ -736,10 +743,14 @@ class UserProfile(Handler):
             self.redirect_to("Login")
 
     def post(self):
+        """Verifies which button was clicked  and render the same page with an input field
+        then  if user's session is still valid and user save changes:
+        -For user's name change the info in every entity using it and sets the cookie again.
+        -For password changes the info in User entity and set the cookie again.
+        -For email changes info in User entity"""
         cookie_value = self.request.cookies.get("name")
         user_name = self.cookie_validator(cookie_value)
         key = self.get_key_by_user_name(user_name)
-        # print key
         user = db.get(key)
         user_hash_salt = user.user_password
         user_salt = user_hash_salt[1]
@@ -755,8 +766,8 @@ class UserProfile(Handler):
         elif self.request.POST.get("editEmail"):
             self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email,
                         edit_email="yes", current_page="logged_user")
-        if self.request.POST.get("saveName"):
 
+        if self.request.POST.get("saveName"):
             new_name = self.request.get("userName")
             name_status = self.name_validator(new_name)
             user_password = self.request.get("userPassword")
@@ -771,22 +782,19 @@ class UserProfile(Handler):
                 self.render("blog_my_profile.html", user_name=new_name, password="-----", email="", edit_name="no",
                             current_page="logged_user")
                 blogs_by_user = db.GqlQuery("SELECT * FROM Blog WHERE user_name = :user_name ", user_name=user_name)
-
-                for b in blogs_by_user:
-                    b.user_name = new_name
-                    b.put()
+                for blog in blogs_by_user:
+                    blog.user_name = new_name
+                    blog.put()
 
                 comments_by_user = db.GqlQuery("SELECT * FROM Comments WHERE user_name = :user_name ",
                                                user_name=user_name)
-                for c in comments_by_user:
-                    c.user_name = new_name
-
-                    b.put()
+                for comment in comments_by_user:
+                    comment.user_name = new_name
+                    comment.put()
 
                 likes_by_user = db.GqlQuery("SELECT * FROM Likes WHERE user_name = :user_name ",
                                             user_name=user_name)
-
-                if likes_by_user != None:
+                if likes_by_user is not None:
                     for l in likes_by_user:
                         l.user_name = new_name
                         l.put()
@@ -809,10 +817,7 @@ class UserProfile(Handler):
             password_status = self.password_validator(new_password, new_password_confirmation)
             if password_status is True and entered_password_with_hash == user_saved_hash:
                 new_saved_password = self.hash_it_with_salt(user_name, new_password)
-                # print user_name
-
                 new_hash = new_saved_password[0]
-                # print new_saved_password
                 user.user_password = new_saved_password
                 user.put()
                 self.set_cookie(new_hash, user_name)
@@ -826,10 +831,9 @@ class UserProfile(Handler):
                 self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
                             error_password=password_status, edit_password="yes", current_page="logged_user")
             else:
-                password_status = password_status + " / Your current password is incorrect"
+                password_status += " / Your current password is incorrect"
                 self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
                             error_password=password_status, edit_password="yes", current_page="logged_user")
-
         elif self.request.POST.get("saveEmail"):
             new_email = self.request.get("newEmail")
             email_status = self.email_validator(new_email)
@@ -845,6 +849,7 @@ class UserProfile(Handler):
 
 
 class LogOut(Handler):
+    """Handles log out requests"""
     def get(self):
         self.response.delete_cookie("name")
         self.redirect_to("Login")

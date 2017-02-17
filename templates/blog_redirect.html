@@ -1,12 +1,14 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
+<!-- Template rendered for single post page -->
+<!-- Errors are outputted by Jinja2 -->
 
-<!--Post display-->
+<!--This part will display the post and the info related to it-->
 <div class="container-fluid post-box">
     <form >
             <div class=" form-group single-post">
-
                 <div><h1 class="text-capitalize title">{{post.title}}</h1></div>
                 <div>
                     <span class=" text-muted text-capitalize">Posted by {{post.user_name}} / </span>
@@ -15,37 +17,23 @@
                 <div class="post-content-box">{{post.content}}</div>
             </div>
     </form>
-
-
-        <!--Delete form -->
-
+    <!-- Delete post form -->
     <form  class="form-inline" action="delete/{{post.key().id()}}" method="post">
-        <!--Edit button, which is a link to the New Post page-->
         <div class="form-group button-box">
+            <!-- The edit and delete buttons will only be displayed to the author of the post. -->
             {% if user_name == post.user_name%}
                 <a href="/blog/edit/{{post.key().id()}}" class="btn btn-primary" name="edit" role="button">Edit Post</a>
+                <input class="btn btn-primary " type="submit" value="Delete" name="delete_blog">
             {% endif %}
-        <!--Checks that for the author and the logged user, if they match then shows delete button-->
-            {% if user_name == post.user_name %}
-            <!--Disables button if the user is editing any comment-->
-                {% if edit_comment == True%}
-                    <input class="btn btn-primary " type="submit" value="Delete" name="delete_blog" disabled>
-                {% else %}
-                    <input class="btn btn-primary " type="submit" value="Delete" name="delete_blog">
-                {% endif %}
-            {% endif %}
-
         </div>
     </form>
-
-
-     <!--Like form-->
+    <!-- Like post form -->
     <form class="form-inline" action="like/{{post.key().id()}}" method="post">
             <div class="form-group like-box">
                 <span class="h4">{{likes}} Likes </span>
-                <!--Checks for the author and the logged user, if they match then doesn't show like button-->
+                <!-- Like button is not available for the author of the post -->
                  {% if blog_author != user_name %}
-                    <!--Disables button if the user is editing any comment-->
+                    <!-- Like button is disable while editing comment process-->
                         {% if edit_comment == True%}
                             <input class="btn btn-link " type="submit" name="like" value="{{user_like}}" disabled>
                         {% elif current_page == "nonRegisteredUser" %}
@@ -56,112 +44,89 @@
                 {% endif %}
             </div>
     </form>
-
-    <!--Comment form-->
+    <!--Comment post form-->
     <div class="comment-form-container">
         <form action="comment/{{post.key().id()}}" method="post">
-                    <!--Shows an error in case the comment doesn't meet the minimum comment's requirements-->
-                    <div class="form-group ">
-                        {% if not comment_error  %}
-                            <textarea class="form-control blog-post" cols="1" rows="0.5" name="comment" placeholder="Add a comment"></textarea>
-                        {% else %}
-                             <small class="error">{{comment_error}}</small>
-                        {% endif %}
-                    </div>
-                    <!--Disables button if the user is editing any comment-->
                      {% if edit_comment == True and not comment_error  %}
-                        <input class="btn btn-primary submit-comment" type="submit" name="comment" disabled>
-
+                        <div class="form-group">
+                            <textarea class="form-control blog-post" cols="1" rows="0.5" name="comment"
+                                      placeholder="Add a comment">
+                            </textarea>
+                        </div>
+                        <div class="button-box">
+                            <!-- Like button is disable while editing comment process-->
+                            <input class="btn btn-primary submit-comment" type="submit" name="comment" disabled>
+                            <a href="/blog/{{post.key().id()}}"  class="btn btn-primary" role="button">Cancel</a>
+                        </div>
                      {% elif not comment_error %}
-                        <input class="btn btn-primary submit-comment" type="submit" name="comment">
-
+                        <div class="form-group ">
+                            <textarea class="form-control blog-post" cols="1" rows="0.5" name="comment"
+                                      placeholder="Add a comment">
+                            </textarea>
+                        </div>
+                        <div class="button-box">
+                            <input class="btn btn-primary submit-comment" type="submit" name="comment">
+                            <a href="/blog/{{post.key().id()}}"  class="btn btn-primary" role="button">Cancel</a>
+                        </div>
                      {% endif %}
         </form>
     </div>
-
+    <!--Form redirecting to the same page if the comment doesn't meet the specifications -->
     <form action="#" method="post">
         <div class="form-group">
+            <!--Shows an error in case the comment doesn't meet the minimum comment's requirements-->
             {% if comment_error%}
-                <textarea class="form-control" cols="1" rows="0.5" name="comment" placeholder="Add a comment"></textarea>
-                <br>
-                <input class="btn btn-primary" type="submit" name="comment" >
+                <small class="error">{{comment_error}}</small>
+                <div class="form-group ">
+                    <textarea class="form-control" cols="1" rows="0.5" name="comment" placeholder="Add a comment"></textarea>
+                </div>
+                <div class="button-box">
+                    <input class="btn btn-primary" type="submit" name="comment" >
+                    <a href="/blog/{{post.key().id()}}"  class="btn btn-primary" role="button">Cancel</a>
+                </div>
             {% endif %}
         </div>
     </form>
-            {% if current_comment%}
-                <div>
-                <span>{{user_name}}</span>
-                {{current_comment}}
-                </div>
-            {% endif %}
-
-
+    <!--This part will display the comments for the post-->
     <div class="container-fluid comments-container">
-            <!--Iterates over all post's comments -->
-
-    {% for comment in comments %}
-
-
-    <!--Checks if comment passed key matches the saved one-->
-    {% if comment_key == comment.key() %}
-    <!-- Shows text input if user choose to edit comment-->
-        {% if edit_comment == True%}
-            <!--Save comment changes form-->
-            <form method="post">
-                <div>
-                    <textarea type="text" name="editComment" >{{comment.comment}}</textarea>
-                    <span>{{error_comment}}</span>
-                    <input class="btn btn-link" type="submit" value="Save Changes" name="{{comment.key().id()}}">
-                    <a href="/blog/{{post.key().id()}}"  class="cancel-changes" role="button">Cancel</a>
-                </div>
-            </form>
-        {% endif %}
-    {% else %}
-        <div class="form-group comment-box">
-            <span class="text-capitalize"><strong>{{comment.user_name}}</strong></span>
-            <div class="comment-content-box">{{comment.comment}}</div>
-    {% endif %}
-
-    <!--Edit comment form-->
-    <form class="" action="edit-comment/{{post.key().id()}}" method="post">
-    {% if comment.user_name == user_name and edit_comment != True %}
-    <input class="btn btn-link  pull-left comment-btn" type="submit" value="Edit" name="{{comment.key().id()}}">
-    {% endif %}
-    </form>
-    <form class="" action="delete-comment/{{post.key().id()}}" method="post">
-    {% if comment.user_name == user_name %}
-    {% if edit_comment == True %}
-        <input class="btn btn-link comment-btn " type="submit" value=" Delete" name="{{comment.key().id()}}" disabled>
-    {% else %}
-        <input class="btn btn-link comment-btn" type="submit" value=" Delete" name="{{comment.key().id()}}" >
-    {% endif %}
-    {% endif %}
-        </div>
-    </form>
-
-    {% endfor %}
-   </div>
-
+        <!--Iterates over all post's comments -->
+        {% for comment in comments %}
+             <!-- Identify which comment is due to edition and shows text input-->
+            {% if comment_key == comment.key() and edit_comment == True %}
+                    <!-- Save comment changes form -->
+                    <form method="post">
+                        <div class="form-group">
+                            <textarea class="form-control" type="text" name="editComment" >{{comment.comment}}</textarea>
+                            <span>{{error_comment}}</span>
+                            <input class="btn btn-link" type="submit" value="Save Changes" name="{{comment.key().id()}}">
+                            <a href="/blog/{{post.key().id()}}"  class="cancel-changes" role="button">Cancel</a>
+                        </div>
+                    </form>
+            {% else %}
+                <div class="form-group comment-box">
+                    <span class="text-capitalize"><strong>{{comment.user_name}}</strong></span>
+                    <div class="comment-content-box">{{comment.comment}}</div>
+            {% endif %}
+                    <!--Edit comment form-->
+                    <form class="" action="edit-comment/{{post.key().id()}}" method="post">
+                        {% if comment.user_name == user_name and edit_comment != True %}
+                            <input class="btn btn-link  pull-left comment-btn" type="submit" value="Edit" name="{{comment.key().id()}}">
+                        {% endif %}
+                    </form>
+                    <!--Delete comment form-->
+                    <form class="" action="delete-comment/{{post.key().id()}}" method="post">
+                        {% if comment.user_name == user_name and edit_comment == True %}
+                            <!-- Delete button is disable while editing comment process-->
+                            <input class="btn btn-link comment-btn " type="submit" value=" Delete" name="{{comment.key().id()}}" disabled>
+                        {% else %}
+                            <input class="btn btn-link comment-btn" type="submit" value=" Delete" name="{{comment.key().id()}}" >
+                        {% endif %}
+                    </form>
+                 </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}
-
-                <!--<div>-->
-                    <!--<div>-->
-                        <!--{% if deleted_comment%}-->
-                            <!--{% if deleted_comment != comment.key() %}-->
-                                <!--<span>{{comment.user_name}}</span>-->
-                                <!--{{comment.comment}}-->
-                                <!--<input type="submit" value="delete" name="{{comment.key().id()}}">-->
-                            <!--{%endif%}-->
-                        <!--{%else%}-->
-                            <!--<span>{{comment.user_name}}</span>-->
-                             <!--{{comment.comment}}-->
-                            <!--<input type="submit" value="delete" name="{{comment.key().id()}}">-->
-                        <!--{% endif %}-->
-
-
-                    <!--</div>-->
-                <!--</div>-->
 
 
 
