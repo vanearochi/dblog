@@ -390,7 +390,7 @@ class SignUp(Handler):
         self.set_cookie(user_hash, user_name, key=key)
 
 class LogIn(Handler):
-    """Handles login requests"""
+    """Handles Login requests"""
     def get(self):
         """Renders login template if there is not a session initiated or if the cookie is not longer valid.
            If the current session is valid then redirect to All posts page
@@ -439,19 +439,23 @@ class LogIn(Handler):
                         user_name=user_name, user_password=user_password)
 
 class NewPost(Handler):
+    """Handles New Post request"""
     def get(self):
-        # type: () -> object
+        """Renders new post template with different navigation bar depending on the status of the user's session"""
         template_name = "blog_entry.html"
         cookie_value = self.request.cookies.get("name")
-        # print cookie_value
         if cookie_value is not None and self.cookie_validator(cookie_value):
             self.render(template_name, title="", content="", current_page="logged_user")
         else:
             self.render(template_name, title="", content="", current_page="nonRegisteredUser")
 
     def post(self):
+        """Verify if the user has an active session if valid, then sends to check the user information
+           if valid, creates a new blog entity of Blog kind and saves it.
+           If the info is not valid it renders the new post again with the corresponding error.
+           If the session is not valid redirects to login """
+
         template_error = "blog_entry.html"
-        current_page = self.request.get("current_page")
         blog_title = self.request.get("title")
         blog_content = self.request.get("content")
         title_status = self.entry_validator("title", blog_title)
@@ -465,7 +469,6 @@ class NewPost(Handler):
                     if title_status is True and content_status is True:
                         new_database_entry = Blog(title=blog_title, content=blog_content, user_name=user_name)
                         new_database_entry.put()
-                        cursor_rows = db.GqlQuery("SELECT * FROM Blog")
                         id_created = new_database_entry.key().id()
                         self.redirect_to("NewCreatedPost", blog_id=id_created)
                     elif title_status is not True and content_status is not True:
