@@ -247,7 +247,7 @@ class Handler(RequestHandler):
         if key is not None:
             value += "|" + str(key)
 
-        self.response.set_cookie("name", value)
+        self.response.set_cookie("name", value, secure=True)
 
     def password_validator(self, user_password, password_confirmation):
         """Checks if password entered meets a min length and match with the confirmation.
