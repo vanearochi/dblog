@@ -1,24 +1,25 @@
 {% extends "blog_base.html"%}
 
 {% block content %}
-<form action="" method="post">
+<form method="post">
    <table class="table form-group">
-       <tr>
-           <th>Username</th>
-           {% if edit_name == "yes" %}
-                <th> <input type="text" value="" name="userName" placeholder="Enter a new name" class="form-control"></th>
-                <th><input type="password" name="userPassword" placeholder="Enter your password" class="form-control"></th>
-                <th><input type="submit" name="saveName" value="Save" class="btn btn-primary"></th>
-                <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
-           {% else %}
-                <th>{{user_name}}</th>
-                <th><input type="submit" name="editName" value="Change" class="btn btn-primary"></th>
-           {% endif %}
-       </tr>
-            {% if error_name != True %}
-                <small class="inputText error text-center">{{error}}</small>
-            {% endif %}
-       <tr>
+           <tr>
+               <th>Username</th>
+               {% if edit_name == "yes" %}
+                    <th> <input type="text" value="" name="userName" placeholder="Enter a new name" class="form-control"></th>
+                    <th><input type="password" name="userPassword" placeholder="Enter your password" class="form-control"></th>
+                    <th><input type="submit" name="saveName" value="Save" class="btn btn-primary"></th>
+                    <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
+               {% else %}
+                    <th>{{user_name}}</th>
+                    <th><input type="submit" name="editName" value="Change" class="btn btn-primary"></th>
+               {% endif %}
+           </tr>
+                {% if error_name != True %}
+                    <small class="inputText error text-center">{{error}}</small>
+                {% endif %}
+           <tr>
+
            <th>Password</th>
             {% if edit_password == "yes" %}
                 <th> <input type="password" value="" name="newPassword" placeholder="Enter a new password" class="form-control"></th>
