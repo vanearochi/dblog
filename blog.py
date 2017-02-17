@@ -302,27 +302,31 @@ class Handler(RequestHandler):
             else:
                 return "Like"
 
-    def render_post(self, comment_error, blog_id, error):
+    def render_post(self, comment_error=None, blog_id=None, error=None, comment_key=None, edit_comment=None):
         """"""
-
         comment_error = comment_error
         cookie_value = self.request.cookies.get("name")
-        logged_user_name = self.cookie_validator(cookie_value)
         blog_key = db.Key.from_path("Blog", int(blog_id))
         blog = db.get(blog_key)
-        blog = db.get(blog_key)
-        user_like = self.like_validator(blog_id, logged_user_name)
-        blog_author = blog.user_name
         likes_counter = blog.likes
-
+        blog_author = blog.user_name
         comments = db.GqlQuery(
             "SELECT * FROM Comments WHERE blog_id = :blog_id and deletion_date = :deletion_date order by created desc",
             blog_id=blog_id, deletion_date=None)
 
-        self.render("blog_redirect.html", post=blog, current_page="logged_user",
-                    user_name=logged_user_name, likes=likes_counter,
-                    blog_author=blog_author, comments=comments, user_like=user_like, comment_error=comment_error,
-                    error=error)
+        if cookie_value is not None and self.cookie_validator(cookie_value):
+            logged_user_name = self.cookie_validator(cookie_value)
+            user_like = self.like_validator(blog_id, logged_user_name)
+            self.render("blog_redirect.html", post=blog, current_page="logged_user",
+                        user_name=logged_user_name, likes=likes_counter,
+                        blog_author=blog_author, comments=comments, user_like=user_like, comment_error=comment_error,
+                        error=error, comment_key=comment_key, edit_comment=edit_comment)
+        else:
+            logged_user_name = None
+            self.render("blog_redirect.html", post=blog, current_page="nonRegisteredUser",
+                        user_name=logged_user_name, likes=likes_counter,
+                        blog_author=blog_author, comments=comments, comment_error=comment_error,
+                        error=error)
 
 
 class SignUp(Handler):
@@ -389,8 +393,10 @@ class SignUp(Handler):
         user_hash = encrypt_password[0]
         self.set_cookie(user_hash, user_name, key=key)
 
+
 class LogIn(Handler):
     """Handles Login requests"""
+
     def get(self):
         """Renders login template if there is not a session initiated or if the cookie is not longer valid.
            If the current session is valid then redirect to All posts page
@@ -438,8 +444,10 @@ class LogIn(Handler):
             self.render(template_name, current_page="login", error1="Please enter a valid user name",
                         user_name=user_name, user_password=user_password)
 
+
 class NewPost(Handler):
     """Handles New Post request"""
+
     def get(self):
         """Renders new post template with different navigation bar depending on the status of the user's session"""
         template_name = "blog_entry.html"
@@ -450,11 +458,10 @@ class NewPost(Handler):
             self.render(template_name, title="", content="", current_page="nonRegisteredUser")
 
     def post(self):
-        """Verify if the user has an active session if valid, then sends to check the user information
-           if valid, creates a new blog entity of Blog kind and saves it.
-           If the info is not valid it renders the new post again with the corresponding error.
+        """Verify if the user has an active session, if valid, then sends to check the post that the user
+           is trying to submit, if valid, creates a new blog entity of Blog kind and saves it.
+           If the info is not valid it renders the blog entry again with the corresponding error.
            If the session is not valid redirects to login """
-
         template_error = "blog_entry.html"
         blog_title = self.request.get("title")
         blog_content = self.request.get("content")
@@ -484,26 +491,28 @@ class NewPost(Handler):
 
 
 class AllBlogPosts(Handler):
-    def get(self):
+    """Handles all post requests"""
 
-        a = self.request
+    def get(self):
+        """Renders all posts template with different navigation bar
+        depending on the status of the user's session"""
 
         cookie_value = self.request.cookies.get("name")
         posts = db.GqlQuery("SELECT * FROM Blog WHERE deletion_date = :deletion_date order by created desc limit 10",
                             deletion_date=None)
         template_name = "blog_posts.html"
-
         if cookie_value is not None and self.cookie_validator(cookie_value):
-            print "cookie"
             user_name = self.cookie_validator(cookie_value)
             self.render(template_name, posts=posts, user=user_name, current_page="logged_user")
         else:
-            print "non cookie"
             self.render(template_name, posts=posts, current_page="nonRegisteredUser")
 
 
 class UserBlogPosts(Handler):
+    """Handles User blog requests"""
+
     def get(self):
+        """Renders user posts template if there is an active session if not then redirects to Login"""
         template_name = "blog_posts.html"
         cookie_value = self.request.cookies.get("name")
 
@@ -516,124 +525,34 @@ class UserBlogPosts(Handler):
         else:
             self.redirect_to("Login")
 
-    def post(self):
-        cookie_value = self.request.cookies.get("name")
-        if cookie_value is not None and self.cookie_validator(cookie_value):
-            post_number = self.request.POST.multi._items[0][0]
-            q = Blog.get(post_number)
-            bla = q.key().id()
-            logged_user_name = self.cookie_validator(cookie_value)
-            self.redirect_to("NewCreatedPost", blog_id=bla, user=logged_user_name)
-
-        if self.request.POST.get("Edit"):
-            # print "bla"
-            self.redirect_to("Edit")
-
 
 class SinglePost(Handler):
+    """Calls a function that renders redirect template with different navigation bar
+            depending on the status of the user's session"""
+
     def get(self, blog_id):
-        # user like should return the button status like or liked
-
-        cookie_value = self.request.cookies.get("name")
-        if cookie_value is not None and self.cookie_validator(cookie_value):
-            self.render_base(blog_id)
-        else:
-            cookie_value = self.request.cookies.get("name")
-            # logged_user_name = self.cookie_checker(cookie_value)
-            blog_key = db.Key.from_path("Blog", int(blog_id))
-
-            blog = db.get(blog_key)
-
-            ##user_like = self.give_key_like(blog_id, logged_user_name)
-            blog_author = blog.user_name
-            likes_counter = blog.likes
-            # user_like = self.like_validator(blog_id, logged_user_name)
-
-
-            comments = db.GqlQuery(
-                "SELECT * FROM Comments WHERE blog_id = :blog_id and deletion_date = :deletion_date order by created desc",
-                blog_id=blog_id, deletion_date=None)
-
-            self.render("blog_redirect.html", post=blog, current_page="nonRegisteredUser",
-                        user_name=None, likes=likes_counter,
-                        blog_author=blog_author, comments=comments)
-
-    def render_base(self, blog_id, current_comment="", deleted_comment=""):
-        cookie_value = self.request.cookies.get("name")
-        logged_user_name = self.cookie_validator(cookie_value)
-        blog_key = db.Key.from_path("Blog", int(blog_id))
-
-        blog = db.get(blog_key)
-        blog = db.get(blog_key)
-
-        user_like = self.like_validator(blog_id, logged_user_name)
-
-        blog_author = blog.user_name
-        likes_counter = blog.likes
-
-        comments = db.GqlQuery(
-            "SELECT * FROM Comments WHERE blog_id = :blog_id and deletion_date = :deletion_date order by created desc",
-            blog_id=blog_id, deletion_date=None)
-
-        self.render("blog_redirect.html", post=blog, current_page="logged_user",
-                    user_name=logged_user_name, likes=likes_counter,
-                    blog_author=blog_author, comments=comments, current_comment=current_comment, user_like=user_like,
-                    deleted_comment=deleted_comment)
-
-    def post(self, blog_id):
-        # print "bla"
-        key = db.Key.from_path("Blog", int(blog_id))
-        post = db.get(key)
-        # current_page = self.request.get("current_page")
-        blog_title = self.request.get("title")
-        blog_content = self.request.get("content")
-        title_status = self.entry_validator("title", blog_title)
-        content_status = self.entry_validator("content", blog_content)
-        cookie_value = self.request.cookies.get("name")
-
-        # for b in blass:
-        #      print b
-        if cookie_value is not None:
-            user_name = self.cookie_validator(cookie_value)
-
-
-        else:
-            self.redirect_to("Login")
-
-    # Render base
-    # Checks if user has liked the post
-    # Checks
-
-
-
-
-
-
-    def give_key_like(self, blog_id, logged_user):
-
-        query_likes = Likes.all(keys_only=True)
-        query_likes.filter("blog_id", blog_id).filter("user_name", logged_user)
-        key_likes = query_likes.get()
-        # print "key"
-        if key_likes == None:
-            return True
-        else:
-            return False
+        self.render_post(blog_id=blog_id)
 
 
 class EditSinglePost(Handler):
+    """Handles Edit requests"""
+
     def get(self, blog_id):
+        """Renders blog entry template filed with the post to be modified"""
         key = db.Key.from_path("Blog", int(blog_id))
         post = db.get(key)
         cookie_value = self.request.cookies.get("name")
         template_name = "blog_entry.html"
-
         if cookie_value is not None and self.cookie_validator(cookie_value):
             self.render(template_name, title=post.title, content=post.content, current_page="logged_user",
                         blog_id=blog_id, edit=True)
 
     def post(self, blog_id):
-        # print "a"
+        """ Verify if the user has an active session, if valid, then sends to check the post that the user
+           is trying to submit, if valid, searchs for the post entity abnd save the changes.
+           If the info is not valid it renders the blog entry again with the corresponding error.
+           If the session is no longer valid redirects to login. """
+
         key = db.Key.from_path("Blog", int(blog_id))
         post = db.get(key)
         blog_title = self.request.get("title")
@@ -646,7 +565,6 @@ class EditSinglePost(Handler):
         if cookie_value is not None and self.cookie_validator(cookie_value):
             if self.request.POST.get("newPostButton"):
                 if title_status is True and content_status is True:
-                    # print "post NewPost"
                     post.title = blog_title
                     post.content = blog_content
                     post.put()
@@ -661,65 +579,52 @@ class EditSinglePost(Handler):
                 else:
                     self.render(template_name, content=blog_content, error1=title_status, current_page="logged_user",
                                 blog_id=blog_id, edit=True)
-
-
         else:
             self.redirect_to("Login")
 
 
 class DeletePost(Handler):
-    def post(self, blog_id):
-        key_post = db.Key.from_path("Blog", int(blog_id))
-        post = db.get(key_post)
-        user_name = post.user_name
-        cookie_value = self.request.cookies.get("name")
-        template_name = "blog_posts.html"
-        post_deletion_datetime = datetime.datetime.now()
-        post.deletion_date = post_deletion_datetime
-        post.put()
+    """ Handles delete post requests"""
 
+    def post(self, blog_id):
+        """Checks if user's session is still valid and
+        Soft deletes user's post modifying the deletion date on the post entity"""
+        cookie_value = self.request.cookies.get("name")
         if cookie_value is not None and self.cookie_validator(cookie_value):
-            user_posts = db.GqlQuery("SELECT * FROM Blog WHERE user_name = :user_name and __key__ != :key_post",
-                                     user_name=user_name, key_post=key_post)
-            self.render(template_name, posts=user_posts, current_page="logged_user")
+            key_post = db.Key.from_path("Blog", int(blog_id))
+            post = db.get(key_post)
+            post_deletion_datetime = datetime.datetime.now()
+            post.deletion_date = post_deletion_datetime
+            post.put()
+            self.redirect_to("AllPosts")
 
 
 class LikePost(Handler):
-    # instead of date liked or like
+    """Handles like post requests"""
     def post(self, blog_id):
+        """Verify if user's session is still valid and if the user has already liked the post
+           if not liked then creates a new entity of kind like, after that the like status depend on the deletion date.
+           The like counter on the blog entity changes accordingly.
+        """
         cookie_value = self.request.cookies.get("name")
         key_post = db.Key.from_path("Blog", int(blog_id))
         post_entity = db.get(key_post)
-        post_likes = post_entity.likes
-        template_name = "blog_posts.html"
 
         if cookie_value is not None and self.cookie_validator(cookie_value):
             logged_user_name = self.cookie_validator(cookie_value)
-            logged_user_key = self.get_key_by_user_name(logged_user_name)
-            logged_user_entity = db.get(logged_user_key)
-
             query_likes = Likes.all(keys_only=True)
             query_likes.filter("blog_id", blog_id).filter("user_name", logged_user_name)
             query_likes_key = query_likes.get()
-
             if query_likes_key is None:
-
                 like_entity = Likes(user_name=logged_user_name, blog_id=blog_id)
                 like_entity.put()
-
                 current_likes_count = post_entity.likes + 1
                 post_entity.likes = current_likes_count
                 post_entity.put()
-                # self.render(template_name, user_like=False, likes=current_likes_count)
                 self.redirect_to("NewCreatedPost", blog_id=blog_id)
-
-                # self.render("blog_redirect.html", post=post_entity, current_page="logged_user",
-                #             user_name=logged_user_name, likes=current_likes_count,
-                #             blog_author=post_author)
             elif query_likes_key is not None:
                 like_entity = db.get(query_likes_key)
                 if like_entity.deletion_date is None:
-
                     current_likes_count = post_entity.likes - 1
                     post_entity.likes = current_likes_count
                     post_entity.put()
@@ -731,7 +636,6 @@ class LikePost(Handler):
                     current_likes_count = post_entity.likes + 1
                     post_entity.likes = current_likes_count
                     post_entity.put()
-
                     like_entity.deletion_date = None
                     like_entity.put()
                     self.redirect_to("NewCreatedPost", blog_id=blog_id)
@@ -740,16 +644,17 @@ class LikePost(Handler):
 
 
 class CommentPost(Handler):
+    """Handles comment post requests"""
     def post(self, blog_id):
+        """Verify if user's session is still valid, if valid, verifies the comment submitted,
+         if creates a new comment entity of kind comment and saves it.
+         If not valid renders the same template with corresponding errors"""
         cookie_value = self.request.cookies.get("name")
-
         if cookie_value is not None and self.cookie_validator(cookie_value):
             logged_user_name = self.cookie_validator(cookie_value)
             user_comment = self.request.get("comment")
-
             comment_status = self.entry_validator("comment", user_comment)
             if comment_status is True:
-
                 comment_entity = Comments(blog_id=blog_id, user_name=logged_user_name, comment=user_comment)
                 comment_entity.put()
                 self.redirect_to("NewCreatedPost", blog_id=blog_id)
@@ -761,47 +666,24 @@ class CommentPost(Handler):
 
 
 class EditComment(Handler):
+    """Handles edit comment requests"""
+
     def post(self, blog_id):
+        """Verify if user's session is still valid, if valid, verifies the comment submitted,
+         if creates a new comment entity of kind comment and saves it.
+         If not valid renders the same template with corresponding errors"""
 
-        request_str = self.request.body
+        cookie_value = self.request.cookies.get("name")
+        if cookie_value is not None and self.cookie_validator(cookie_value):
+            request_str = self.request.body
+            request_split = request_str.split("=")
+            comment_id = request_split[0]
+            action_clicked = request_split[1]
 
-        request_split = request_str.split("=")
-        comment_id = request_split[0]
-        action_clicked = request_split[1]
-        #
+            if action_clicked == "Edit":
 
-        if action_clicked == "Edit":
-
-            comment_key = db.Key.from_path("Comments", int(comment_id))
-            comment_entity = db.get(comment_key)
-            cookie_value = self.request.cookies.get("name")
-            logged_user_name = self.cookie_validator(cookie_value)
-            blog_key = db.Key.from_path("Blog", int(blog_id))
-            blog = db.get(blog_key)
-            blog = db.get(blog_key)
-            user_like = self.like_validator(blog_id, logged_user_name)
-
-            blog_author = blog.user_name
-            likes_counter = blog.likes
-
-            comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id order by created desc",
-                                   blog_id=blog_id)
-
-            self.render("blog_redirect.html", post=blog, current_page="logged_user",
-                        user_name=logged_user_name, likes=likes_counter,
-                        blog_author=blog_author, comments=comments, user_like=user_like, edit_comment=True,
-                        comment_key=comment_key
-                        )
-        else:
-            comment_id = self.request.POST.multi._items[1][0]
-            comment_key = db.Key.from_path("Comments", int(comment_id))
-            comment_entity = db.get(comment_key)
-            modification_datetime = datetime.datetime.now()
-            comment_entity.last_modified = modification_datetime
-            current_comment = self.request.get("editComment")
-
-            validation = self.entry_validator("title", current_comment)
-            if validation is not True:
+                comment_key = db.Key.from_path("Comments", int(comment_id))
+                #comment_entity = db.get(comment_key)
                 cookie_value = self.request.cookies.get("name")
                 logged_user_name = self.cookie_validator(cookie_value)
                 blog_key = db.Key.from_path("Blog", int(blog_id))
@@ -815,16 +697,47 @@ class EditComment(Handler):
                 comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id order by created desc",
                                        blog_id=blog_id)
 
-                self.render("blog_redirect.html", post=blog, current_page="logged_user",
-                            user_name=logged_user_name, likes=likes_counter,
-                            blog_author=blog_author, comments=comments, user_like=user_like, edit_comment=True,
-                            comment_key=comment_key, error_comment=validation
-                            )
-            else:
+                self.render_post(blog_id=blog_id, comment_key=comment_key, edit_comment=True)
 
-                comment_entity.comment = current_comment
-                comment_entity.put()
-                self.redirect_to("NewCreatedPost", blog_id=blog_id)
+                # self.render("blog_redirect.html", post=blog, current_page="logged_user",
+                #             user_name=logged_user_name, likes=likes_counter,
+                #             blog_author=blog_author, comments=comments, user_like=user_like, edit_comment=True,
+                #             comment_key=comment_key
+                #             )
+            else:
+                comment_id = self.request.POST.multi._items[1][0]
+                comment_key = db.Key.from_path("Comments", int(comment_id))
+                comment_entity = db.get(comment_key)
+                modification_datetime = datetime.datetime.now()
+                comment_entity.last_modified = modification_datetime
+                current_comment = self.request.get("editComment")
+
+                validation = self.entry_validator("title", current_comment)
+                if validation is not True:
+                    self.render_post(comment_key=comment_key, edit_comment=True, blog_id=blog_id)
+                    # cookie_value = self.request.cookies.get("name")
+                    # logged_user_name = self.cookie_validator(cookie_value)
+                    # blog_key = db.Key.from_path("Blog", int(blog_id))
+                    # blog = db.get(blog_key)
+                    # user_like = self.like_validator(blog_id, logged_user_name)
+                    # blog_author = blog.user_name
+                    # likes_counter = blog.likes
+                    #
+                    # comments = db.GqlQuery("SELECT * FROM Comments WHERE blog_id = :blog_id order by created desc",
+                    #                        blog_id=blog_id)
+                    #
+                    # self.render("blog_redirect.html", post=blog, current_page="logged_user",
+                    #             user_name=logged_user_name, likes=likes_counter,
+                    #             blog_author=blog_author, comments=comments, user_like=user_like, edit_comment=True,
+                    #             comment_key=comment_key
+                    #             )
+                else:
+                    # TOdo: check consistensy when saving the comment
+                    comment_entity.comment = current_comment
+                    comment_entity.put()
+                    self.redirect_to("NewCreatedPost", blog_id=blog_id)
+        else:
+            self.redirect.to("Login")
 
 
 class DeleteComment(Handler):
