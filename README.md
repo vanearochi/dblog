@@ -32,6 +32,12 @@ development server:
 https://cloud.google.com/appengine/docs/python/tools/using-local-server
 ```
 
+Keep in mind this code is meant to be run in Google Cloud Engine and
+usage of secure cookies depends on an enviroment variable being set:
+```
+SERVER_SOFTWARE="Google App Engine/"
+```
+
 ### Built with
 
 * Jinja2 - Template engine. 
