@@ -598,6 +598,8 @@ class DeletePost(Handler):
             post.deletion_date = post_deletion_datetime
             post.put()
             self.redirect_to("AllPosts")
+        else:
+            self.redirect_to("Login")
 
 
 class LikePost(Handler):
