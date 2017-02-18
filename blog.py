@@ -247,7 +247,8 @@ class Handler(RequestHandler):
         if key is not None:
             value += "|" + str(key)
 
-        self.response.set_cookie("name", value, secure=True)
+        secure_cookie = os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/')
+        self.response.set_cookie("name", value, secure=secure_cookie)
 
     def password_validator(self, user_password, password_confirmation):
         """Checks if password entered meets a min length and match with the confirmation.
