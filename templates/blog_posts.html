@@ -1,16 +1,24 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
+<!-- Template rendered for all and user's posts page -->
+<!-- Errors and certain values are outputted by Jinja2 -->
 <form action="" method="post">
+    <div class="container-fluid blog-post">
     {% for p in posts %}
-        <h1><a href="{{p.key().id()}}">{{p.title}}</a></h1>
-        <div>
-            <span>By {{p.user_name}}</span>
+        <div class="list-group blog-container ">
+            <h2><a href="{{p.key().id()}}" class="text-capitalize active">{{p.title}}</a></h2>
+            <div class="inputText">
+                <small class="text-muted text-capitalize">
+                    Posted by {{p.user_name}} /
+                    <span class="text-center">{{p.show_created}}</span>
+                </small>
+                <div class="blog-content">{{p.content}}</div>
+            </div>
 
         </div>
-        <h6>{{p.created}}</h6>
-        <div>{{p.content}}</div>
     {% endfor %}
+    </div>
 </form>
-
 {% endblock %}

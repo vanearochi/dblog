@@ -1,57 +1,66 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
-<form action="" method="post">
-   <table class="table form-group">
-       <tr>
-           <th>Username</th>
-           {% if edit_name == "yes" %}
-                <th> <input type="text" value="" name="userName" placeholder="Enter a new name" class="form-control"></th>
-                <th><input type="password" name="userPassword" placeholder="Enter your password" class="form-control"></th>
-                <th><input type="submit" name="saveName" value="Save" class="btn btn-primary"></th>
-                <th><a  href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
-           {% else %}
-                <th>{{user_name}}</th>
-                <th><input type="submit" name="editName" value="Change" class="btn btn-primary"></th>
-           {% endif %}
-       </tr>
-            {% if error_name != True %}
-                <p>{{error}}</p>
+<!-- Template rendered for user's profile page -->
+<!-- Errors are outputted by Jinja2 -->
+<form method="post">
+    <table class="table form-group">
+        <tr>
+            <th>Username</th>
+            <!-- Logic to display or not an input value to change user's name-->
+            {% if edit_name == "yes" %}
+            <th><input type="text" value="" name="userName" placeholder="Enter a new name" class="form-control"></th>
+            <th><input type="password" name="userPassword" placeholder="Enter your password" class="form-control"></th>
+            <th><input type="submit" name="saveName" value="Save" class="btn btn-primary"></th>
+            <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
+            {% else %}
+            <th>{{user_name}}</th>
+            <th><input type="submit" name="editName" value="Change" class="btn btn-primary"></th>
             {% endif %}
-       <tr>
-           <th>Password</th>
+        </tr>
+        {% if error_name != True %}
+        <small class="inputText error text-center">{{error}}</small>
+        {% endif %}
+        <tr>
+            <th>Password</th>
+            <!-- Logic to display or not an input value to change user's password-->
             {% if edit_password == "yes" %}
-                <th> <input type="password" value="" name="newPassword" placeholder="Enter a new password" class="form-control"></th>
-                <th> <input type="password" value="" name="confirmNewPassword" placeholder="Confirm new password" class="form-control"></th>
-                <th><input type="password" name="currentUserPassword" placeholder="Enter current password" class="form-control"></th>
-                <th><input type="submit" name="savePassword" value="Save" class="btn btn-primary"></th>
-                <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
+            <th><input type="password" value="" name="newPassword" placeholder="Enter a new password"
+                       class="form-control"></th>
+            <th><input type="password" value="" name="confirmNewPassword" placeholder="Confirm new password"
+                       class="form-control"></th>
+            <th><input type="password" name="currentUserPassword" placeholder="Enter current password"
+                       class="form-control"></th>
+            <th><input type="submit" name="savePassword" value="Save" class="btn btn-primary"></th>
+            <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
             {% else %}
-                <th>{{password}}</th>
-                <th><input type="submit" name="editPassword" value="Change" class="btn btn-primary" ></th>
+            <th>{{password}}</th>
+            <th><input type="submit" name="editPassword" value="Change" class="btn btn-primary"></th>
             {% endif %}
             {% if error_name != True %}
-                <p>{{error_password}}</p>
+            <small class="inputText error text-center">{{error_password}}</small>
             {% endif %}
-       </tr>
-       <tr>
-           <th><label >Email</label></th>
-           {% if edit_email == "yes" %}
-                <th>
-
-                    <input type="email" class="form-control" value="" name="newEmail" placeholder="Enter new email "></th>
-                <th>
-
-                    <input type="submit" name="saveEmail" value="Save" class="btn btn-primary" id="saveEmail"></th>
-                    <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
+        </tr>
+        <tr>
+            <th><label>Email</label></th>
+            <!-- Logic to display or not an input value to change user's email-->
+            {% if edit_email == "yes" %}
+            <th>
+                <input type="email" class="form-control" value="" name="newEmail" placeholder="Enter new email ">
+            </th>
+            <th>
+                <input type="submit" name="saveEmail" value="Save" class="btn btn-primary" id="saveEmail">
+            </th>
+            <th><a href="/blog/myprofile" class="btn btn-primary">Cancel</a></th>
             {% else %}
-                <th>{{email}}</th>
-                <th><input type="submit" name="editEmail" value="Change" class="btn btn-primary"></th>
+            <th>{{email}}</th>
+            <th><input type="submit" name="editEmail" value="Change" class="btn btn-primary"></th>
             {% endif %}
             {% if error_name != True %}
-                <p>{{error_email}}</p>
+            <small class="inputText error text-center">{{error_email}}</small>
             {% endif %}
-       </tr>
-   </table>
+        </tr>
+    </table>
 </form>
 {% endblock %}

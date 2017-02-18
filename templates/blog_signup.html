@@ -1,29 +1,29 @@
 {% extends "blog_base.html"%}
+<!-- blog_base's child template-->
 
 {% block content %}
-
-<form action="" method="post">
-
-        <div class="inputContainer">
-            <input class="inputText" type="text" name="userName" value="{{user_name}}" placeholder="Username">
+<!-- Template rendered for user's profile page -->
+<!-- Errors are outputted by Jinja2 -->
+<form action="/blog/signup" method="post">
+        <div class="inputContainer form-group">
+            <input class="inputText form-control" type="text" name="userName" value="{{user_name}}" placeholder="Username">
             {% if name_status != True and name_status != None%}
-                <div style="color:red; font-size:0.8em">{{name_status}}</div>
+                <small class="inputText error">{{name_status}}</small>
             {% endif %}
-            <input class="inputText" type="password" name="userPassword" value="{{user_password}}" placeholder="Password">
+            <input class="inputText form-control" type="password" name="userPassword" value="{{user_password}}" placeholder="Password">
             {% if password_status != True%}
-                <div style="color:red; font-size:0.8em">{{password_status}}</div>
+                <small class="inputText error">{{password_status}}</small>
             {% endif %}
-            <input class="inputText" type="password" name="passwordConfirmation" value="" placeholder="Confirm password">
-            <input class="inputText" type="text" name="userEmail" value="{{user_email}}" placeholder="Email(optional)">
+            <input class="inputText form-control" type="password" name="passwordConfirmation" value="" placeholder="Confirm password">
+            <input class="inputText form-control" type="email" name="userEmail" value="{{user_email}}" placeholder="Email(optional)">
             {% if email_status != True and email_status == "" %}
-                <div>{{email_status}}</div>
+                <small class="inputText error">{{email_status}}</small>
             {% endif %}
-            <input class="submitButton" type="submit">
+            <input class="submitButton btn btn-primary" type="submit">
+            <div>
+                <p><small class="form-text mark">Name must have at least than 3 characters.</small></p>
+                <small class="form-text mark ">Password must have at least 6 characters.</small>
+            </div>
         </div>
-    <div>
-        <p>Name must have more than 3 characters</p>
-        <p>Password must have at least 6 characters</p>
-    </div>
-
 </form>
 {% endblock %}
