@@ -857,7 +857,7 @@ class LogOut(Handler):
 
 
 
-app = webapp2.WSGIApplication([webapp2.Route('/', handler=Handler, name='Home'),
+app = webapp2.WSGIApplication([webapp2.Route('/', handler=AllBlogPosts, name='Home'),
                                webapp2.Route('/blog/blogposts', handler=AllBlogPosts, name='AllPosts'),
                                webapp2.Route('/blog/newpost', handler=NewPost, name='NewPost'),
                                webapp2.Route(r'/blog/<blog_id:[0-9]+>', handler=SinglePost, name='NewCreatedPost'),
