@@ -854,9 +854,6 @@ class LogOut(Handler):
         self.response.delete_cookie("name")
         self.redirect_to("Login")
 
-
-
-
 app = webapp2.WSGIApplication([webapp2.Route('/', handler=AllBlogPosts, name='Home'),
                                webapp2.Route('/blog/blogposts', handler=AllBlogPosts, name='AllPosts'),
                                webapp2.Route('/blog/newpost', handler=NewPost, name='NewPost'),
