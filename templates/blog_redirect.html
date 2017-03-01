@@ -21,7 +21,7 @@
     <form  class="form-inline" action="delete/{{post.key().id()}}" method="post">
         <div class="form-group button-box">
             <!-- The edit and delete buttons will only be displayed to the author of the post. -->
-            {% if user_name == post.user_name%}
+            {% if author_is_logged_user == True %}
                 <a href="/blog/edit/{{post.key().id()}}" class="btn btn-primary" name="edit" role="button">Edit Post</a>
                 <input class="btn btn-primary " type="submit" value="Delete" name="delete_blog">
             {% endif %}
@@ -32,7 +32,7 @@
             <div class="form-group like-box">
                 <span class="h4">{{likes}} Likes </span>
                 <!-- Like button is not available for the author of the post -->
-                 {% if blog_author != user_name %}
+                 {% if author_is_logged_user != True %}
                     <!-- Like button is disable while editing comment process-->
                         {% if edit_comment == True%}
                             <input class="btn btn-link " type="submit" name="like" value="{{user_like}}" disabled>
@@ -109,13 +109,13 @@
             {% endif %}
                     <!--Edit comment form-->
                     <form class="" action="edit-comment/{{post.key().id()}}" method="post">
-                        {% if comment.user_name == user_name and edit_comment != True %}
+                        {% if author_is_logged_user == True and edit_comment != True %}
                             <input class="btn btn-link  pull-left comment-btn" type="submit" value="Edit" name="{{comment.key().id()}}">
                         {% endif %}
                     </form>
                     <!--Delete comment form-->
                     <form class="" action="delete-comment/{{post.key().id()}}" method="post">
-                        {% if comment.user_name == user_name and edit_comment == True %}
+                        {% if author_is_logged_user == True and edit_comment == True %}
                             <!-- Delete button is disable while editing comment process-->
                             <input class="btn btn-link comment-btn " type="submit" value=" Delete" name="{{comment.key().id()}}" disabled>
                         {% else %}
