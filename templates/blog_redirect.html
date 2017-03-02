@@ -11,7 +11,7 @@
             <div class=" form-group single-post">
                 <div><h1 class="text-capitalize title">{{post.title}}</h1></div>
                 <div>
-                    <span class=" text-muted text-capitalize">Posted by {{post.user_name}} / </span>
+                    <span class=" text-muted text-capitalize">Posted by {{post.user.user_name}} / </span>
                     <span class="text-muted">Written {{post.show_created}}</span>
                 </div>
                 <div class="post-content-box">{{post.content}}</div>
@@ -22,7 +22,8 @@
         <div class="form-group button-box">
             <!-- The edit and delete buttons will only be displayed to the author of the post. -->
             {% if author_is_logged_user == True %}
-                <a href="/blog/edit/{{post.key().id()}}" class="btn btn-primary" name="edit" role="button">Edit Post</a>
+                <a href="/blog/edit/{{post.key().id()}}" class="btn btn-primary" name="edit" role="button">Edit</a>
+
                 <input class="btn btn-primary " type="submit" value="Delete" name="delete_blog">
             {% endif %}
         </div>
@@ -104,24 +105,24 @@
                     </form>
             {% else %}
                 <div class="form-group comment-box">
-                    <span class="text-capitalize"><strong>{{comment.user_name}}</strong></span>
-                    <div class="comment-content-box">{{comment.comment}}</div>
+                    <div>
+                        <span class="text-capitalize"><strong>{{comment.user_commenter.user_name}}</strong></span>
+                        <div class="comment-content-box">{{comment.comment}}</div>
+                    </div>
             {% endif %}
-                    <!--Edit comment form-->
-                    <form class="" action="edit-comment/{{post.key().id()}}" method="post">
-                        {% if author_is_logged_user == True and edit_comment != True %}
-                            <input class="btn btn-link  pull-left comment-btn" type="submit" value="Edit" name="{{comment.key().id()}}">
+                    <!--Edit and Delete comment form-->
+                        {% if comment.user_commenter.user_name == user_name and edit_comment != True %}
+                            <div>
+                                <form class="" action="edit-comment/{{post.key().id()}}" method="post">
+                                    <input class="btn btn-link  pull-left comment-btn" type="submit" value="Edit"
+                                           name="{{comment.key().id()}}">
+                                 </form>
+                                 <form class="" action="delete-comment/{{post.key().id()}}" method="post">
+                                    <input class="btn btn-link comment-btn" type="submit" value="Delete"
+                                           name="{{comment.key().id()}}" >
+                                 </form>
+                            </div>
                         {% endif %}
-                    </form>
-                    <!--Delete comment form-->
-                    <form class="" action="delete-comment/{{post.key().id()}}" method="post">
-                        {% if author_is_logged_user == True and edit_comment == True %}
-                            <!-- Delete button is disable while editing comment process-->
-                            <input class="btn btn-link comment-btn " type="submit" value=" Delete" name="{{comment.key().id()}}" disabled>
-                        {% else %}
-                            <input class="btn btn-link comment-btn" type="submit" value=" Delete" name="{{comment.key().id()}}" >
-                        {% endif %}
-                    </form>
                  </div>
         {% endfor %}
     </div>
