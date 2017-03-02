@@ -244,7 +244,7 @@ class Handler(RequestHandler):
         if blog is None:
             self.redirect_to("AllPosts")
         else:
-            author_is_logged_user = self.is_logged_user_the_author(blog_id)
+
 
             likes_counter = len(blog.like)
             blog_author = blog.user.user_name
@@ -254,6 +254,7 @@ class Handler(RequestHandler):
                 comments_container.append(comment)
 
             if cookie_value is not None and self.cookie_validator(cookie_value):
+                author_is_logged_user = self.is_logged_user_the_author(blog_id)
                 logged_user_name = self.cookie_validator(cookie_value)
                 user_like = self.like_validator(blog, logged_user_name)
                 self.render("blog_redirect.html", post=blog, current_page="logged_user",
@@ -574,8 +575,8 @@ class LikePost(Handler):
             cookie_value = self.request.cookies.get("name")
             logged_user_name = self.cookie_validator(cookie_value)
             user_key = self.get_key_by_user_name(logged_user_name)
-            if post_entity.like is not None:
-                print post_entity.like
+            post_author = post_entity.user.user_name
+            if post_entity.like is not None and post_author != logged_user_name:
                 if user_key not in post_entity.like:
                     post_entity.like.append(user_key)
                     post_entity.put()
@@ -584,7 +585,6 @@ class LikePost(Handler):
                     post_entity.like.remove(user_key)
                     post_entity.put()
                     self.redirect_to("NewCreatedPost", blog_id=blog_id)
-
         else:
             self.redirect_to("Login")
 
