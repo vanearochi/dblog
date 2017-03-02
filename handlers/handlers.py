@@ -248,11 +248,10 @@ class Handler(RequestHandler):
 
             likes_counter = len(blog.like)
             blog_author = blog.user.user_name
-            blog_comments = blog.comment
-            for comment in blog_comments:
-                comment_entity = db.get(comment)
-                if comment_entity.deletion_date is None:
-                    comments_container.append(comment_entity)
+            comment_query = db.GqlQuery("Select * from Comments Where post_commented = :key_post and deletion_date = :deletion_date",
+                                        key_post=blog_key, deletion_date=None)
+            for comment in comment_query:
+                comments_container.append(comment)
 
             if cookie_value is not None and self.cookie_validator(cookie_value):
                 logged_user_name = self.cookie_validator(cookie_value)
@@ -606,13 +605,10 @@ class CommentPost(Handler):
             user_comment = self.request.get("comment")
             comment_status = self.entry_validator("comment", user_comment)
             key_post = db.Key.from_path("Blog", int(blog_id))
-            post_entity = db.get(key_post)
             if comment_status is True:
-                comment_entity = Comments(blog_id=blog_id, comment=user_comment,
+                comment_entity = Comments(comment=user_comment,
                                           user_commenter=user_key, post_commented=key_post)
                 comment_entity.put()
-                post_entity.comment.append(comment_entity.key())
-                post_entity.put()
                 self.redirect_to("NewCreatedPost", blog_id=blog_id)
 
             else:
