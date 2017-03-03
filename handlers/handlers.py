@@ -7,12 +7,12 @@ import jinja2
 from google.appengine.ext import db
 from webapp2 import RequestHandler
 
-
 from models.models import User, Blog, Comments
 
 path_handlers_dir = os.path.dirname(__file__)
 path_template_dir = os.path.join(os.path.dirname(path_handlers_dir), "templates")
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(path_template_dir), autoescape=True, trim_blocks=True)
+
 
 class Handler(RequestHandler):
     """ Handles functions that are used by more than one class."""
@@ -218,11 +218,11 @@ class Handler(RequestHandler):
                 return True
         return error_valid_email
 
-    def like_validator(self, blog_entity, logged_user_name ):
+    def like_validator(self, blog_entity, logged_user_name):
         """Checks if user has liked or not a particular blog post.
         Args:
-            post_id: A string representing the id of a created blog_post.
-            user_name: A string representing the name of the user logged in.
+            blog_entity: An object of kind Blog representing the post to be liked.
+            logged_user_name: A string representing the name of the user logged in.
         Returns:
             A string indicating if user likes or not the post.
         """
@@ -235,7 +235,14 @@ class Handler(RequestHandler):
 
     def render_post(self, comment_error=None, blog_id=None, error=None, comment_key=None, edit_comment=None,
                     ):
-        """"""
+        """Renders single post page
+
+        comment_error: A String representing an error on the comment submitted.
+        blog_id: An integer representing the post that will be displayed.
+        error: A string representing an error on the post submitted
+        comment_key: A Key object of a comment instance.
+        edit_comment: A Boolean value that represents if a comment is being edited.
+        """
         comment_error = comment_error
         cookie_value = self.request.cookies.get("name")
         blog_key = db.Key.from_path("Blog", int(blog_id))
@@ -245,11 +252,11 @@ class Handler(RequestHandler):
             self.redirect_to("AllPosts")
         else:
 
-
             likes_counter = len(blog.like)
             blog_author = blog.user.user_name
-            comment_query = db.GqlQuery("Select * from Comments Where post_commented = :key_post and deletion_date = :deletion_date",
-                                        key_post=blog_key, deletion_date=None)
+            comment_query = db.GqlQuery(
+                "Select * from Comments Where post_commented = :key_post and deletion_date = :deletion_date",
+                key_post=blog_key, deletion_date=None)
             for comment in comment_query:
                 comments_container.append(comment)
 
@@ -259,7 +266,8 @@ class Handler(RequestHandler):
                 user_like = self.like_validator(blog, logged_user_name)
                 self.render("blog_redirect.html", post=blog, current_page="logged_user",
                             user_name=logged_user_name, likes=likes_counter,
-                            blog_author=blog_author, comments=comments_container, user_like=user_like, comment_error=comment_error,
+                            blog_author=blog_author, comments=comments_container, user_like=user_like,
+                            comment_error=comment_error,
                             error=error, comment_key=comment_key, edit_comment=edit_comment,
                             author_is_logged_user=author_is_logged_user)
             else:
@@ -288,7 +296,6 @@ class Handler(RequestHandler):
             return False
 
 
-
 class SignUp(Handler):
     """Handles Sign up form requests"""
 
@@ -300,10 +307,9 @@ class SignUp(Handler):
         template_name = "blog_signup.html"
 
         if self.valid_login_session() is True:
-                self.redirect_to("AllPosts")
+            self.redirect_to("AllPosts")
         else:
             self.render(template_name, current_page="signUp")
-
 
     def post(self):
         """Sends to check if the information entered by the user when registering is valid,
@@ -361,7 +367,7 @@ class LogIn(Handler):
         """
         template_name = "blog_login.html"
         if self.valid_login_session() is True:
-                self.redirect_to("AllPosts")
+            self.redirect_to("AllPosts")
         else:
             self.render(template_name, current_page="login")
 
@@ -400,7 +406,6 @@ class LogIn(Handler):
 
 class NewPost(Handler):
     """Handles New Post request"""
-
 
     def get(self):
         """Renders new post template with different navigation bar depending on the status of the user's session"""
@@ -496,65 +501,74 @@ class EditSinglePost(Handler):
         key = db.Key.from_path("Blog", int(blog_id))
         post = db.get(key)
         template_name = "blog_entry.html"
-        if self.valid_login_session() is True:
-            self.is_logged_user_the_author(blog_id)
-            self.render(template_name, title=post.title, content=post.content, current_page="logged_user",
+        if post is not None:
+            if self.valid_login_session() is True:
+                self.is_logged_user_the_author(blog_id)
+                self.render(template_name, title=post.title, content=post.content, current_page="logged_user",
                             blog_id=blog_id, edit=True)
+            else:
+                self.redirect_to("Login")
         else:
-            self.redirect_to("Login")
+            self.redirect_to("AllPosts")
 
     def post(self, blog_id):
-        """ Verify if the user has an active session, if valid, then sends to check the post that the user
-           is trying to submit, if valid, searchs for the post entity abnd save the changes.
+        """ Verify if the user has an active session and if user is the author,
+            if  both are valid, then sends to check the post that the user
+           is trying to submit, if valid, search for the post entity and save the changes.
            If the info is not valid it renders the blog entry again with the corresponding error.
            If the session is no longer valid redirects to login. """
 
         key = db.Key.from_path("Blog", int(blog_id))
         post = db.get(key)
-        blog_title = self.request.get("title")
-        blog_content = self.request.get("content")
-        title_status = self.entry_validator("title", blog_title)
-        content_status = self.entry_validator("content", blog_content)
-        template_name = "blog_entry.html"
-
-        if self.valid_login_session() is True:
-            if self.is_logged_user_the_author(blog_id) is True:
-                if self.request.POST.get("newPostButton"):
-                    if title_status is True and content_status is True:
-                        post.title = blog_title
-                        post.content = blog_content
-                        post.put()
-                        self.redirect_to("NewCreatedPost", blog_id=blog_id, current_page="logged_user")
-                    elif title_status is not True and content_status is not True:
-                        user_error = title_status + ". " + content_status
-                        self.render(template_name, error3=user_error, current_page="logged_user", blog_id=blog_id,
-                                    edit=True)
-                    elif title_status is True:
-                        self.render(template_name, title=blog_title, error2=content_status, current_page="logged_user",
-                                    blog_id=blog_id, edit=True)
-                    else:
-                        self.render(template_name, content=blog_content, error1=title_status, current_page="logged_user",
-                                    blog_id=blog_id, edit=True)
+        if post is not None:
+            blog_title = self.request.get("title")
+            blog_content = self.request.get("content")
+            title_status = self.entry_validator("title", blog_title)
+            content_status = self.entry_validator("content", blog_content)
+            template_name = "blog_entry.html"
+            if self.valid_login_session() is True:
+                if self.is_logged_user_the_author(blog_id) is True:
+                    if self.request.POST.get("newPostButton"):
+                        if title_status is True and content_status is True:
+                            post.title = blog_title
+                            post.content = blog_content
+                            post.put()
+                            self.redirect_to("NewCreatedPost", blog_id=blog_id, current_page="logged_user")
+                        elif title_status is not True and content_status is not True:
+                            user_error = title_status + ". " + content_status
+                            self.render(template_name, error3=user_error, current_page="logged_user", blog_id=blog_id,
+                                        edit=True)
+                        elif title_status is True:
+                            self.render(template_name, title=blog_title, error2=content_status,
+                                        current_page="logged_user",
+                                        blog_id=blog_id, edit=True)
+                        else:
+                            self.render(template_name, content=blog_content, error1=title_status,
+                                        current_page="logged_user",
+                                        blog_id=blog_id, edit=True)
+                else:
+                    self.redirect_to("NewCreatedPost", blog_id=blog_id)
             else:
-                self.redirect_to("NewCreatedPost", blog_id=blog_id)
+                self.redirect_to("Login")
         else:
-            self.redirect_to("Login")
+            self.redirect_to("AllPosts")
 
 
 class DeletePost(Handler):
     """ Handles delete post requests"""
 
     def post(self, blog_id):
-        """Verifies if user's session is still valid and
+        """Verifies if user's session is still valid and if user is the author.
         Soft deletes user's post modifying the deletion date on the post entity
         Beware of a small inconsistency so the change might not be immediate
         """
         if self.valid_login_session() is True:
             key_post = db.Key.from_path("Blog", int(blog_id))
             post = db.get(key_post)
-            post_deletion_datetime = datetime.datetime.now()
-            post.deletion_date = post_deletion_datetime
-            post.put()
+            if post is not None and self.is_logged_user_the_author(blog_id) is True:
+                post_deletion_datetime = datetime.datetime.now()
+                post.deletion_date = post_deletion_datetime
+                post.put()
             self.redirect_to("AllPosts")
         else:
             self.redirect_to("Login")
@@ -562,8 +576,9 @@ class DeletePost(Handler):
 
 class LikePost(Handler):
     """Handles like post requests"""
+
     def post(self, blog_id):
-        """Verifies if user's session is still valid and if the user has already liked the post
+        """Verifies if user's session is still valid, if user has already liked the post and if user is not the author
            if not liked then creates a new entity of kind like, after that the like status depend on the deletion date.
            The like counter on the blog entity changes accordingly.
         """
@@ -575,8 +590,7 @@ class LikePost(Handler):
             cookie_value = self.request.cookies.get("name")
             logged_user_name = self.cookie_validator(cookie_value)
             user_key = self.get_key_by_user_name(logged_user_name)
-            post_author = post_entity.user.user_name
-            if post_entity.like is not None and post_author != logged_user_name:
+            if post_entity.like is not None and self.is_logged_user_the_author(blog_id) is False:
                 if user_key not in post_entity.like:
                     post_entity.like.append(user_key)
                     post_entity.put()
@@ -591,6 +605,7 @@ class LikePost(Handler):
 
 class CommentPost(Handler):
     """Handles comment post requests"""
+
     def post(self, blog_id):
         """Verifies if user's session is still valid, if valid, verifies the comment submitted,
          if creates a new comment entity of kind comment and saves it.
@@ -612,7 +627,7 @@ class CommentPost(Handler):
                 self.redirect_to("NewCreatedPost", blog_id=blog_id)
 
             else:
-                self.render_post(comment_error="Please add a valid comment", blog_id=blog_id,
+                self.render_post(comment_error="Please add a valid comment", blog_id=blog_id, edit_comment=True,
                                  error="Please add a valid comment")
         else:
             self.redirect_to("Login")
@@ -622,20 +637,27 @@ class EditComment(Handler):
     """Handles edit comment requests"""
 
     def post(self, blog_id):
-        """Verifies if user's session is still valid, if valid, verifies the comment submitted,
-         if creates a new comment entity of kind comment and saves it.
-         If not valid renders the same template with corresponding errors
+        """Verifies if user's session is still valid and if commenter is logged user,
+         if both are valid, verifies the comment submitted,
+         if valid, creates a new comment entity of kind comment and saves it.
+         If not valid, renders the same template with corresponding errors
          Beware that there will be a small inconsistency when saving the change so it might appear after
          reloading"""
-
+        # TODO check if author of comment is logged user and that the comment exist
         if self.valid_login_session() is True:
             request_str = self.request.body
             request_split = request_str.split("=")
-            comment_id = request_split[0]
             action_clicked = request_split[1]
+            cookie_value = self.request.cookies.get("name")
+            logged_user_name = self.cookie_validator(cookie_value)
             if action_clicked == "Edit":
+                comment_id = request_split[0]
                 comment_key = db.Key.from_path("Comments", int(comment_id))
-                self.render_post(blog_id=blog_id, comment_key=comment_key, edit_comment=True)
+                comment_entity = db.get(comment_key)
+                if comment_entity.user_commenter.user_name == logged_user_name:
+                    self.render_post(blog_id=blog_id, comment_key=comment_key, edit_comment=True)
+                else:
+                    self.redirect_to('NewCreatedPost', blog_id=blog_id)
             else:
                 comment_id = self.request.POST.multi._items[1][0]
                 comment_key = db.Key.from_path("Comments", int(comment_id))
@@ -644,32 +666,40 @@ class EditComment(Handler):
                 comment_entity.last_modified = modification_datetime
                 current_comment = self.request.get("editComment")
                 validation = self.entry_validator("title", current_comment)
-                if validation is not True:
-                    self.render_post(comment_key=comment_key, edit_comment=True, blog_id=blog_id,
-                                     current_comment=current_comment)
+                if comment_entity.user_commenter.user_name == logged_user_name:
+                    if validation is not True:
+                        self.render_post(comment_key=comment_key, edit_comment=True, blog_id=blog_id)
+                    else:
+                        comment_entity.comment = current_comment
+                        comment_entity.put()
+                        self.redirect_to("NewCreatedPost", blog_id=blog_id)
                 else:
-                    comment_entity.comment = current_comment
-                    comment_entity.put()
-                    self.redirect_to("NewCreatedPost", blog_id=blog_id)
+                    self.redirect_to('NewCreatedPost', blog_id=blog_id)
         else:
             self.redirect_to("Login")
 
 
 class DeleteComment(Handler):
     """Handles Delete comment requests"""
+
     def post(self, blog_id):
-        """Verifies if user's session is still valid and
-            if it is, it soft deletes user's post modifying the deletion date on the comment entity"""
+        """Verifies if user's session is still valid and the commenter is the logged user, if both are valid,
+        soft deletes user's post modifying the deletion date on the comment entity"""
         if self.valid_login_session() is True:
             request_str = self.request.body
             request_split = request_str.split("=")
             comment_id = request_split[0]
             comment_key = db.Key.from_path("Comments", int(comment_id))
             comment_entity = db.get(comment_key)
-            deletion_datetime = datetime.datetime.now()
-            comment_entity.deletion_date = deletion_datetime
-            comment_entity.put()
-            self.redirect_to("NewCreatedPost", blog_id=blog_id)
+            cookie_value = self.request.cookies.get("name")
+            logged_user_name = self.cookie_validator(cookie_value)
+            if comment_entity.user_commenter.user_name == logged_user_name:
+                deletion_datetime = datetime.datetime.now()
+                comment_entity.deletion_date = deletion_datetime
+                comment_entity.put()
+                self.redirect_to("NewCreatedPost", blog_id=blog_id)
+            else:
+                self.redirect_to("NewCreatedPost", blog_id=blog_id)
         else:
             self.redirect_to("Login")
 
@@ -711,7 +741,8 @@ class UserProfile(Handler):
                 self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_name="yes",
                             current_page="logged_user")
             elif self.request.POST.get("editPassword"):
-                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="yes",
+                self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
+                            edit_password="yes",
                             current_page="logged_user")
             elif self.request.POST.get("editEmail"):
                 self.render("blog_my_profile.html", user_name=user_name, password="-----", email=user_email,
@@ -733,14 +764,16 @@ class UserProfile(Handler):
                                 current_page="logged_user")
 
                 elif name_status is not True and entered_password_with_hash == user_saved_hash:
-                    self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", error=name_status,
+                    self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
+                                error=name_status,
                                 edit_name="yes", current_page="logged_user")
                 elif name_status is True and entered_password_with_hash != user_saved_hash:
                     self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
                                 error="Please enter a valid password", edit_name="yes", current_page="logged_user")
                 else:
                     self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
-                                error="Please enter a valid name and password", edit_name="yes", current_page="logged_user")
+                                error="Please enter a valid name and password", edit_name="yes",
+                                current_page="logged_user")
 
             elif self.request.POST.get("savePassword"):
                 new_password = self.request.get("newPassword")
@@ -754,7 +787,8 @@ class UserProfile(Handler):
                     user.user_password = new_saved_password
                     user.put()
                     self.set_cookie(new_hash, user_name)
-                    self.render("blog_my_profile.html", user_name=user_name, password="-----", email="", edit_password="no",
+                    self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
+                                edit_password="no",
                                 current_page="logged_user")
                 elif password_status is not True and entered_password_with_hash == user_saved_hash:
                     self.render("blog_my_profile.html", user_name=user_name, password="-----", email="",
@@ -785,6 +819,7 @@ class UserProfile(Handler):
 
 class LogOut(Handler):
     """Handles log out requests"""
+
     def get(self):
         self.response.delete_cookie("name")
         self.redirect_to("Login")
